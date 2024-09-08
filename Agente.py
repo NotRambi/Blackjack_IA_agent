@@ -636,7 +636,7 @@ def InferenzaProbabilità(i,dictMazzo,lenMazzo,dictProbHand,flagAsso):
         if dictMazzo[e] == 0:
             continue
         flag = False
-        flag2 = flagAsso
+        flag2 = flagAsso # ho perso 3 ore per colpa di queste due flag
         if len(e) == 3:
             if i+10 <= 21:
                 dictProbHand[i+10] = dictProbHand[i+10] + prob*dictMazzo[e]/lenMazzo
