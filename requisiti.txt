@@ -1,0 +1,12 @@
+Blackjack:
+Il Blackjack è un gioco di carte che si gioca con uno o più mazzi di carte, in un tavolo da gioco devono essere presenti un Dealer ed uno o più giocatori, i quali dovranno giocare contro il Dealer indipendentemente dagli altri partecipante al tavolo. L'obiettivo del gioco è ottenere una mano il cui valore totale sia il più vicino possibile a 21 senza superarlo. Le carte numeriche valgono il loro valore facciale, le figure (fante, regina, re) valgono 10 punti ciascuna, e l'asso può valere 1 o 11 punti, a seconda di quale valore aiuti di più la mano. All'inizio del turno, ciascun giocatore e il dealer ricevono due carte. I giocatori possono poi scegliere di "chiedere" una carta in più per avvicinarsi a 21, o "stare" con il totale attuale. Alcuni giocatori possono anche scegliere di "raddoppiare" la loro scommessa, ricevendo una sola carta aggiuntiva, oppure "dividere" se hanno due carte dello stesso valore, creando due mani separate. Il dealer gioca dopo che tutti i giocatori hanno completato le loro azioni; deve continuare a pescare carte finché il suo totale è inferiore a 17. Se il totale del dealer supera 21, i giocatori che non hanno "sforato" (cioè, che non hanno superato 21) vincono. Se il dealer non supera 21, vincono le mani dei giocatori che hanno un totale superiore a quello del dealer senza superare 21. Se un giocatore ottiene un Blackjack, ovvero un asso e una carta da 10 punti con le prime due carte, vince automaticamente, a meno che il dealer non abbia anch'esso un Blackjack, in tal caso la mano è considerata un pareggio.
+
+Requisiti:
+- Sviluppare un ambiente di gioco funzionante 
+- Sviluppare un algoritmo che permetta l'automatismo del Dealer
+- Permettere ad un giocatore umano di partecipare ad una partita
+- Sviluppare un agente intelligente in grado di giocare:
+	- l'agente deve poter comprendere la situazione sul tavolo per inferire sulla sua kb
+	- l'agente deve riuscire a decidere quanto puntare nel suo turno al fine di massimizzare la vincita attesa
+	- l'agente deve saper decidere se chiamare carta o stare al fine di massimizzare la probabilità di vincita attesa
+	- l'agente deve saper decidere se sfruttare le altre funzionalità del gioco per massimizzare la vincita attesa
