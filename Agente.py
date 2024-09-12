@@ -636,7 +636,7 @@ def InferenzaProbabilità(i,dictMazzo,lenMazzo,dictProbHand,flagAsso):
         if dictMazzo[e] == 0:
             continue
         flag = False
-        flag2 = flagAsso # ho perso 3 ore per colpa di queste due flag
+        flag2 = flagAsso
         if len(e) == 3:
             if i+10 <= 21:
                 dictProbHand[i+10] = dictProbHand[i+10] + prob*dictMazzo[e]/lenMazzo
@@ -715,17 +715,93 @@ def ChooseWithDict(MyHand,DealerHand):
         dictValDealerHand = InferenzaProbabilità(HandValue(DealerHand),dictMazzo,lenMazzo,dictValDealerHand,False)
 
     # stampa distribuzioni di probabilità
-    for e in dictValDealerHand:
-        dictValDealerHand[e] = round(dictValDealerHand[e],5) # arrotondo per maggiore leggibilità, poi non serivirà
-    print("Dealer: ",dictValDealerHand)
+    #for e in dictValDealerHand:
+    #    dictValDealerHand[e] = round(dictValDealerHand[e],5) # arrotondo per maggiore leggibilità, poi non serivirà
+    #print("Dealer: ",dictValDealerHand)
+
+    # confronto tra dealer e mano personale
+    probWinPasso = 0
+    probDrawPasso = 0
+    probLosePasso = 0
+    for m in dictValMyHand:
+        for d in dictValDealerHand:
+            if m == 22:
+                if d == 22:
+                    probDrawPasso += dictValMyHand[m]*dictValDealerHand[d]
+                else:
+                    probLosePasso += dictValMyHand[m]*dictValDealerHand[d]
+            elif d == 22:
+                probWinPasso += dictValMyHand[m]*dictValDealerHand[d]
+            else:
+                if m > d:
+                    probWinPasso += dictValMyHand[m]*dictValDealerHand[d]
+                elif m == d:
+                    probDrawPasso += dictValMyHand[m]*dictValDealerHand[d]
+                else:
+                    probLosePasso += dictValMyHand[m]*dictValDealerHand[d]
+
+    #print("Passo:",probWinPasso,probDrawPasso,probLosePasso)
+
+    # caso in cui si chiede carta
+    probWinCarta = 0
+    probDrawCarta = 0
+    probLoseCarta = 0
+    lenMazzo = len(mazzo)
+
+    for carta in mazzo:
+        newmazzo = mazzo.copy()
+        newmazzo.remove(carta)
+        myNewHand = MyHand.copy()
+        myNewHand.append(carta)
+        dictValMyHand2 = {2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0,22:0}
+        if HandValue(myNewHand) <= 21:
+            dictValMyHand2[HandValue(myNewHand)] = 1
+        else:
+            dictValMyHand2[22] = 1
+        if HandValue(DealerHand) == 11:
+            dictValDealerHand2 = InferenzaProbabilità(HandValue(DealerHand),dictMazzo,lenMazzo,dictValDealerHand,True)
+        else:
+            dictValDealerHand2 = InferenzaProbabilità(HandValue(DealerHand),dictMazzo,lenMazzo,dictValDealerHand,False)
+        for m in dictValMyHand2:
+            for d in dictValDealerHand2:
+                if m == 22:
+                    if d == 22:
+                        probDrawCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                    else:
+                        probLoseCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                elif d == 22:
+                    probWinCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                else:
+                    if m > d:
+                        probWinCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                    elif m == d:
+                        probDrawCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                    else:
+                        probLoseCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+
+    #print("Carta:",probWinCarta,probDrawCarta,probLoseCarta)
+
+    chooseCarta = probWinCarta + probDrawCarta*0.2 - probLoseCarta
+    choosePasso = probWinPasso + probDrawPasso*0.2 - probLosePasso
+
+    if chooseCarta > choosePasso:
+        choose = 'carta'
+    else:
+        choose = 'passo'
+
+    return choose, probWinCarta, probWinPasso, probDrawCarta, probDrawPasso, probLoseCarta, probLosePasso
+
+
 
 
 # test approccio 2
 
-carta = '1f'
-print(carta)
-mazzo.remove(carta)
-ChooseWithDict(['1c','1q'],[carta]) # per ora testo solo il delaer, le carte del giocatore non vengono ancora conteggiate
+YourHand2 = ['8c','9q']
+DealerHand2 = ['6f']
+mazzo.remove(YourHand2[0])
+mazzo.remove(YourHand2[1])
+mazzo.remove(DealerHand2[0])
+print(ChooseWithDict(YourHand2,DealerHand2)) # per ora testo solo il delaer, le carte del giocatore non vengono ancora conteggiate
 
 
 # RECAP Approccio 2 #
