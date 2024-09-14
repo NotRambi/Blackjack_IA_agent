@@ -12,6 +12,9 @@ ValoriCarte = []
 ValoriCarteUscite = []
 Taglia = 0
 
+# solo per le simulazioni solo agente
+numManiSimulazione = 10000
+
 
 ### FUNZIONI ###
 
@@ -69,6 +72,23 @@ def PuntataIniziale():
             except:
                 print('Inserisci un numero intero')
                 continue
+    for j in range(0, len(Agenti)):
+        Agenti[j].bet = 0
+        while True:
+            try:
+                #Agenti[j].bet = int(input(Agenti[j].nome+', inserisci la sua puntata: ')) ## da ancora implementare scelta puntata agente
+                Agenti[j].bet = 10
+                if Agenti[j].bet <= 0:
+                    continue
+                if Agenti[j].bet > Agenti[j].soldi:
+                    Agenti[j].bet = 0
+                    #continue
+                    break
+                else:
+                    Agenti[j].soldi -= Agenti[j].bet
+                    break
+            except:
+                continue
 
 # Controllo Vincite (controlla singole coppie giocatore-dealer e assegna soldi)
 def Vincite():
@@ -102,6 +122,17 @@ def Vincite():
                                 break
                     continue
                 print(Giocatori[i].nome+', sconfitta')
+        # idem per gli agenti
+        for j in range(0,len(Agenti)):
+            if Agenti[j].blackjack:
+                Agenti[j].soldi += Agenti[j].bet
+                print(Agenti[j].nome+', pareggio BJ')
+                continue
+            elif Agenti[j].assicurazione:
+                Agenti[j].soldi += 1.5*Agenti[j].bet
+                print(Agenti[j].nome+', pareggio Assicurazione')
+                continue
+            print(Agenti[j].nome+', sconfitta')
     else:
         for i in range(0, len(Giocatori)):
             if not Giocatori[i].sballa:
@@ -159,7 +190,53 @@ def Vincite():
                         if flag == False:
                             print(Giocatori[i].nome+', sconfitta')
             else:
-                print(Giocatori[i].nome+', sballato')
+                if i < numGiocatori:
+                    if Dealer.sballa:
+                        Giocatori[i].soldi += Giocatori[i].bet
+                        print(Giocatori[i].nome+', pareggio Dealer sballato')
+                        continue
+                    else:
+                        print(Giocatori[i].nome+', sballato')
+                        continue
+                else: # caso giocatore clone generato da uno split
+                    if Dealer.sballa:
+                        for j in range(0,numGiocatori):
+                            if Giocatori[j].split:
+                                if Giocatori[i].nome == Giocatori[j].nome+'_split':
+                                    Giocatori[j].soldi += Giocatori[i].bet
+                                    print(Giocatori[i].nome+', pareggio Dealer sballato')
+                                    break
+                        continue
+                    else:
+                        print(Giocatori[i].nome+', sballato')
+        # idem per gli agenti
+        for j in range(0,len(Agenti)):
+            if not Agenti[j].sballa:
+                if Agenti[j].blackjack:
+                    Agenti[j].soldi += 2.5*Agenti[j].bet
+                    print(Agenti[j].nome+', vittoria BJ')
+                    continue
+                elif Dealer.sballa:
+                    Agenti[j].soldi += 2*Agenti[j].bet
+                    print(Agenti[j].nome+', vittoria Dealer sballato')
+                    continue
+                else:
+                    if Agenti[j].valoreMano > Dealer.valoreMano:
+                        Agenti[j].soldi += 2*Agenti[j].bet
+                        print(Agenti[j].nome+', vittoria')
+                        continue
+                    elif Agenti[j].valoreMano == Dealer.valoreMano:
+                        Agenti[j].soldi += Agenti[j].bet
+                        print(Agenti[j].nome+', pareggio')
+                        continue
+                print(Agenti[j].nome+', sconfitta')
+            else:
+                if Dealer.sballa:
+                    Agenti[j].soldi += Agenti[j].bet
+                    print(Agenti[j].nome+', pareggio Dealer sballato')
+                    continue
+                else:
+                    print(Agenti[j].nome+', sballato')
 
 # Controllo Assicurazione
 def Assicurazione():
@@ -305,17 +382,21 @@ class AgenteIA(Giocatore):
         self.mazzo = mazzo_intero.copy() * num_mazzi # mazzo_intero e num_mazzi compongono la KB iniziale dell'agente
         self.carteUscite = []                        # tutti gli altri parametri sono osservazioni della partita 
         self.manoDealer = []
-        self.valoreManoDealer = 0
 
     def resetMazzo(self): # funzione per resettare il mazzo quando viene rimescolato raggiunta la taglia
         self.mazzo = self.mazzo_intero.copy() * numDiMazzi
         self.carteUscite = []
+
+    def updateMazzo(self, uscite):
+        self.resetMazzo()
+        self.carteUscite = uscite.copy()
+        for carta in uscite:
+            self.mazzo.remove(carta)
     
     def resetMano(self): # override del reset di giocatore
         self.mano = []
         self.valoreMano = 0
         self.manoDealer = []
-        self.valoreManoDealer = 0
         self.bet = 0
         self.blackjack = False
         self.sballa = False
@@ -323,16 +404,179 @@ class AgenteIA(Giocatore):
         self.split = False
         self.doppio = False
 
-    # da modificare: per il dealer non mi interessa aggiornare la mano ad ogni carta, mi serve solo la carta iniziale per inferire la probabilità durante la fase iniziale
     def addCardToDealer(self, carta): # aggiorna mano e valore del dealer
         self.manoDealer.append(carta)
-        self.valoreManoDealer += ValoriCarteUscite[CarteUscite.index(carta)]
-        if self.valoreManoDealer > 21:
-            for i in range(0, len(self.manoDealer)):
-                if self.manoDealer[i] == '1c' or self.manoDealer[i] == '1q' or self.manoDealer[i] == '1f' or self.manoDealer[i] == '1p':
-                    self.manoDealer[i] = '1C' if self.manoDealer[i] == '1c' else '1Q' if self.manoDealer[i] == '1q' else '1F' if self.manoDealer[i] == '1f' else '1P'
-                    self.valoreManoDealer -= 10
-                    break
+
+    def HandValueCalc(self, hand): # funzione per calcolare il valore di una mano
+        Hand = hand.copy()
+        Val = 0
+        for card in Hand:
+            if len(card) == 3:
+                Val += 10
+            elif card[0] == '1':
+                Val += 11
+            else:
+                Val += int(card[0])
+        
+        while Val > 21:
+            flag = False
+            for card in Hand:
+                if len(card) == 2 and card[0] == '1':
+                    Val -= 10
+                    Hand.remove(card)
+                    flag = True
+            if not flag:
+                break
+        return Val
+    
+    def InferenzaProbabilità(self,i,dictMazzo,lenMazzo,dictProbHand,flagAsso): # funzione ricorsiva per calcolare la distribuzione di probabilità del dealer
+        if i >= 17: # caso base
+            return dictProbHand
+        prob = dictProbHand[i]
+        for e in dictMazzo:
+            if dictMazzo[e] == 0:
+                continue
+            flag = False
+            flag2 = flagAsso
+            if len(e) == 3:
+                if i+10 <= 21:
+                    dictProbHand[i+10] = dictProbHand[i+10] + prob*dictMazzo[e]/lenMazzo
+                    i2 = i+10
+                elif flagAsso:
+                    flag2 = False
+                    dictProbHand[i-10+10] = dictProbHand[i-10+10] + prob*dictMazzo[e]/lenMazzo
+                    i2 = i-10+10
+                else:
+                    dictProbHand[22] = dictProbHand[22] + prob*dictMazzo[e]/lenMazzo
+                    i2 = 22
+            elif e[0] == '1':
+                if i+11 <= 21:
+                    dictProbHand[i+11] = dictProbHand[i+11] + prob*dictMazzo[e]/lenMazzo
+                    i2 = i+11
+                    flag = True
+                elif i+1 <= 21:
+                    dictProbHand[i+1] = dictProbHand[i+1] + prob*dictMazzo[e]/lenMazzo
+                    i2 = i+1
+                else:
+                    dictProbHand[22] = dictProbHand[22] + prob*dictMazzo[e]/lenMazzo
+                    i2 = 22
+            else:
+                if i+int(e[0]) <= 21:
+                    dictProbHand[i+int(e[0])] = dictProbHand[i+int(e[0])] + prob*dictMazzo[e]/lenMazzo
+                    i2 = i+int(e[0])
+                elif flagAsso:
+                    flag2 = False
+                    dictProbHand[i-10+int(e[0])] = dictProbHand[i-10+int(e[0])] + prob*dictMazzo[e]/lenMazzo
+                    i2 = i-10+int(e[0])
+                else:
+                    dictProbHand[22] = dictProbHand[22] + prob*dictMazzo[e]/lenMazzo
+                    i2 = 22
+            dictProbHand[i] = dictProbHand[i] - prob*dictMazzo[e]/lenMazzo
+            newMazzo = dictMazzo.copy()
+            newMazzo[e] -= 1
+            if flag:
+                dictProbHand = self.InferenzaProbabilità(i2,newMazzo,lenMazzo-1,dictProbHand,True)
+            else:
+                dictProbHand = self.InferenzaProbabilità(i2,newMazzo,lenMazzo-1,dictProbHand,flag2)
+        return dictProbHand
+    
+    def ChooseCarta(self, MyHand,DealerHand): # funzione chiamata per decidere se chiedere carta o passare
+
+        # casi base
+        if self.HandValueCalc(MyHand) > 20: # caso in cui si ha già un 21
+            return 0 # passo
+        elif self.HandValueCalc(MyHand) < 12: # caso in cui si ha un 11 o meno (matematicamente impossibile sballare)
+            return 1 # carta
+        
+        # creo dizionario con le carte del mazzo
+        dictMazzo = {'1s':0, '2s':0, '3s':0, '4s':0, '5s':0, '6s':0, '7s':0, '8s':0, '9s':0, '10s':0} # rappresendo il mazzo come la quantità di carte presenti per valore
+        for carta in self.mazzo:
+            if len(carta) == 3: # è un 10 o una figura
+                dictMazzo['10s'] += 1
+            elif carta[0] == '1': # è un asso
+                dictMazzo['1s'] += 1
+            else: # è una carta da 2 a 9
+                dictMazzo[carta[0]+'s'] += 1
+
+        lenMazzo = len(self.mazzo)
+
+        # distribuzione di probabilità della mano del giocatore e del dealer
+        dictValMyHand = {2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0,22:0} # 22 è il caso in cui si sballa
+        dictValDealerHand = {2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0,22:0}
+        dictValMyHand[self.HandValueCalc(MyHand)] = 1
+        dictValDealerHand[self.HandValueCalc(DealerHand)] = 1
+        
+        # caso in cui il dealer ha un asso
+        if self.HandValueCalc(DealerHand) == 11:
+            dictValDealerHand = self.InferenzaProbabilità(self.HandValueCalc(DealerHand),dictMazzo,lenMazzo,dictValDealerHand,True)
+        else:
+            dictValDealerHand = self.InferenzaProbabilità(self.HandValueCalc(DealerHand),dictMazzo,lenMazzo,dictValDealerHand,False)
+
+
+        # confronto tra dealer e mano personale se passo
+        probWinPasso = 0
+        probDrawPasso = 0
+        probLosePasso = 0
+        for m in dictValMyHand:
+            for d in dictValDealerHand:
+                if m == 22:
+                    if d == 22:
+                        probDrawPasso += dictValMyHand[m]*dictValDealerHand[d]
+                    else:
+                        probLosePasso += dictValMyHand[m]*dictValDealerHand[d]
+                elif d == 22:
+                    probWinPasso += dictValMyHand[m]*dictValDealerHand[d]
+                else:
+                    if m > d:
+                        probWinPasso += dictValMyHand[m]*dictValDealerHand[d]
+                    elif m == d:
+                        probDrawPasso += dictValMyHand[m]*dictValDealerHand[d]
+                    else:
+                        probLosePasso += dictValMyHand[m]*dictValDealerHand[d]
+
+        # caso in cui si chiede carta
+        probWinCarta = 0
+        probDrawCarta = 0
+        probLoseCarta = 0
+
+        for carta in self.mazzo:
+            newmazzo = self.mazzo.copy()
+            newmazzo.remove(carta)
+            myNewHand = MyHand.copy()
+            myNewHand.append(carta)
+            dictValMyHand2 = {2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0,22:0}
+            if self.HandValueCalc(myNewHand) <= 21:
+                dictValMyHand2[self.HandValueCalc(myNewHand)] = 1
+            else:
+                dictValMyHand2[22] = 1
+            if self.HandValueCalc(DealerHand) == 11:
+                dictValDealerHand2 = self.InferenzaProbabilità(self.HandValueCalc(DealerHand),dictMazzo,lenMazzo,dictValDealerHand,True)
+            else:
+                dictValDealerHand2 = self.InferenzaProbabilità(self.HandValueCalc(DealerHand),dictMazzo,lenMazzo,dictValDealerHand,False)
+            for m in dictValMyHand2:
+                for d in dictValDealerHand2:
+                    if m == 22:
+                        if d == 22:
+                            probDrawCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                        else:
+                            probLoseCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                    elif d == 22:
+                        probWinCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                    else:
+                        if m > d:
+                            probWinCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                        elif m == d:
+                            probDrawCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                        else:
+                            probLoseCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+
+        chooseCarta = probWinCarta + probDrawCarta*0.2 - probLoseCarta
+        choosePasso = probWinPasso + probDrawPasso*0.2 - probLosePasso
+
+        if chooseCarta > choosePasso:
+            return 1 # carta
+        else:
+            return 0 # passo
     
 # definizione di dealer
 class dealer:
@@ -374,8 +618,8 @@ class dealer:
 Dealer = dealer()
 
 # inizializzazione giocatori e agenti (da 1 a 3 tra agenti e giocatori)
-numGiocatori = 2 # giocatori umani (da terminale)
-numAgenti = 0 # ancora da implementare
+numGiocatori = 0 # giocatori umani (da terminale)
+numAgenti = 3 # ancora da implementare
 Giocatori = []
 Agenti = []
 soldiIniziali = 1000 # soldi iniziali per giocatori e agenti
@@ -390,20 +634,27 @@ for i in range(0, numAgenti):
 creaMazzo()
 
 ## Loop di gioco ##
-# da aggiungere agentiIA
+# da finire di aggiungere agentiIA: assicurazione, split, raddoppio.
 
 while True:
     print("inizio partita")
     PuntataIniziale() # fase di puntata iniziale
     for i in range(0, numGiocatori):
         Giocatori[i].addCard(PescaCarta()) # distribuzione delle carte: giocatori, dealer, giocatori, dealer
+    for j in range(0, numAgenti):
+        Agenti[j].addCard(PescaCarta())
     Dealer.addCard(PescaCarta())
     for i in range(0, numGiocatori):
         Giocatori[i].addCard(PescaCarta())
+    for j in range(0, numAgenti):
+        Agenti[j].addCardToDealer(Dealer.mano[0])
+        Agenti[j].addCard(PescaCarta())
     Dealer.addCard(PescaCarta())
     print('Dealer: '+Dealer.mano[0]+', *')
     for i in range(0, numGiocatori):
         print(Giocatori[i].toStr()+', '+Giocatori[i].toStrMano())
+    for j in range(0, numAgenti):
+        print(Agenti[j].toStr()+', '+Agenti[j].toStrMano())
     
     if Dealer.blackjack: # blackjack del dealer
         Assicurazione()
@@ -463,12 +714,30 @@ while True:
                                 print('Inserisci y o n')
                                 continue
 
-        print('Dealer: '+Dealer.toStrMano())
+        for j in range(0, numAgenti):
+            while True:
+                Agenti[j].updateMazzo(CarteUscite)
+                if Agenti[j].valoreMano == 21:
+                    break
+                scelta = Agenti[j].ChooseCarta(Agenti[j].mano,Dealer.mano)
+                #print(Agenti[j].nome+', '+'carta' if scelta == 1 else 'passo')
+                if scelta == 1:
+                    Agenti[j].addCard(PescaCarta())
+                    #print(Agenti[j].toStrMano())
+                    if Agenti[j].sballa:
+                        #print(Agenti[j].nome+', sballato')
+                        break
+                    elif Agenti[j].doppio:
+                        break
+                else:
+                    break
+
+        #print('Dealer: '+Dealer.toStrMano())
         while Dealer.valoreMano < 17:
             Dealer.addCard(PescaCarta())
-            print('Dealer: '+Dealer.toStrMano())
+            #print('Dealer: '+Dealer.toStrMano())
             if Dealer.sballa:
-                print('Dealer sballato')
+                #print('Dealer sballato')
                 break
 
     Vincite() # finiti i turni si controllano le vincite
@@ -477,13 +746,23 @@ while True:
     DelSplit() # elimina i giocatori clonati
     for i in range(0, numGiocatori):
         Giocatori[i].resetMano() # resetta le mani dei giocatori
+    for j in range(0, numAgenti):
+        Agenti[j].resetMano()
     Dealer.resetMano() # resetta la mano del dealer
 
     for i in range(0, len(Giocatori)):
         print(Giocatori[i].toStr()) 
+    for j in range(0, len(Agenti)):
+        print(Agenti[j].toStr())
     
     while True: # loop (provvisorio) per continuare a giocare o uscire dalla partita
-        continua = input('Vuoi continuare a giocare? (y/n): ') 
+        #continua = input('Vuoi continuare a giocare? (y/n): ') 
+        continua = 'y'
+        if numManiSimulazione == 0:
+            continua = 'n'
+        else:
+            numManiSimulazione -= 1
+
         if continua == 'y':
             break
         elif continua == 'n':
