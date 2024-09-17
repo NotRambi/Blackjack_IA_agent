@@ -60,8 +60,8 @@ def PuntataIniziale():
         while True:
             try:
                 Giocatori[i].bet = int(input(Giocatori[i].nome+', inserisci la tua puntata: ')) 
-                if Giocatori[i].bet <= 0:
-                    print('Inserisci una puntata maggiore di 0')
+                if Giocatori[i].bet < 0:
+                    print('Inserisci una puntata non minore di 0')
                     continue
                 if Giocatori[i].bet > Giocatori[i].soldi:
                     print('Non hai abbastanza soldi per questa puntata')
@@ -76,13 +76,10 @@ def PuntataIniziale():
         Agenti[j].bet = 0
         while True:
             try:
-                #Agenti[j].bet = int(input(Agenti[j].nome+', inserisci la sua puntata: ')) ## da ancora implementare scelta puntata agente
-                Agenti[j].bet = 10
-                if Agenti[j].bet <= 0:
-                    continue
+                Agenti[j].bet = Agenti[j].chooseBet()
                 if Agenti[j].bet > Agenti[j].soldi:
-                    Agenti[j].bet = 0
-                    #continue
+                    print(Agenti[j].nome+' ha scommesso tutti i soldi')
+                    Agenti[j].bet = Agenti[j].soldi
                     break
                 else:
                     Agenti[j].soldi -= Agenti[j].bet
@@ -94,6 +91,8 @@ def PuntataIniziale():
 def Vincite():
     if Dealer.blackjack:
         for i in range(0, len(Giocatori)):
+            if Giocatori[i].bet == 0:
+                continue
             if i < numGiocatori: # se è un giocatore originale
                 if Giocatori[i].blackjack:
                     Giocatori[i].soldi += Giocatori[i].bet # se sia dealer che giocatore hanno un blackjack, il giocatore va in pari
@@ -124,6 +123,8 @@ def Vincite():
                 print(Giocatori[i].nome+', sconfitta')
         # idem per gli agenti
         for j in range(0,len(Agenti)):
+            if Agenti[j].bet == 0:
+                continue
             if Agenti[j].blackjack:
                 Agenti[j].soldi += Agenti[j].bet
                 print(Agenti[j].nome+', pareggio BJ')
@@ -135,6 +136,8 @@ def Vincite():
             print(Agenti[j].nome+', sconfitta')
     else:
         for i in range(0, len(Giocatori)):
+            if Giocatori[i].bet == 0:
+                continue
             if not Giocatori[i].sballa:
                 if i < numGiocatori: # caso giocatore originale
                     if Giocatori[i].blackjack:
@@ -190,27 +193,12 @@ def Vincite():
                         if flag == False:
                             print(Giocatori[i].nome+', sconfitta')
             else:
-                if i < numGiocatori:
-                    if Dealer.sballa:
-                        Giocatori[i].soldi += Giocatori[i].bet
-                        print(Giocatori[i].nome+', pareggio Dealer sballato')
-                        continue
-                    else:
-                        print(Giocatori[i].nome+', sballato')
-                        continue
-                else: # caso giocatore clone generato da uno split
-                    if Dealer.sballa:
-                        for j in range(0,numGiocatori):
-                            if Giocatori[j].split:
-                                if Giocatori[i].nome == Giocatori[j].nome+'_split':
-                                    Giocatori[j].soldi += Giocatori[i].bet
-                                    print(Giocatori[i].nome+', pareggio Dealer sballato')
-                                    break
-                        continue
-                    else:
-                        print(Giocatori[i].nome+', sballato')
+                print(Giocatori[i].nome+', sballato')
+
         # idem per gli agenti
         for j in range(0,len(Agenti)):
+            if Agenti[j].bet == 0:
+                continue
             if not Agenti[j].sballa:
                 if Agenti[j].blackjack:
                     Agenti[j].soldi += 2.5*Agenti[j].bet
@@ -231,25 +219,41 @@ def Vincite():
                         continue
                 print(Agenti[j].nome+', sconfitta')
             else:
-                if Dealer.sballa:
-                    Agenti[j].soldi += Agenti[j].bet
-                    print(Agenti[j].nome+', pareggio Dealer sballato')
-                    continue
-                else:
-                    print(Agenti[j].nome+', sballato')
+                print(Agenti[j].nome+', sballato')
 
 # Controllo Assicurazione
 def Assicurazione():
     if Dealer.mano[1][0] == '1' and len(Dealer.mano[1]) == 2: # si può assicurare solo se la carta scoperta del dealer è un asso
         for i in range(0, numGiocatori):
-            if not Giocatori[i].blackjack and not Giocatori[i].split and Giocatori[i].soldi >= Giocatori[i].bet/2: # non deve avere un blackjack anche il giocatore
+            if Giocatori[i].bet > 0:
+                if not Giocatori[i].blackjack and not Giocatori[i].split and Giocatori[i].soldi >= Giocatori[i].bet/2: # non deve avere un blackjack anche il giocatore
+                    while True:
+                        try:
+                            assicura = input(Giocatori[i].nome+', vuoi assicurare la tua mano? (y/n): ')
+                            if assicura == 'y':
+                                Giocatori[i].assicura() # sottrae metà della puntata e la mette in assicurazione
+                                break
+                            elif assicura == 'n':
+                                break
+                            else:
+                                print('Inserisci y o n')
+                                continue
+                        except:
+                            print('Inserisci y o n')
+                            continue
+
+# Controllo Raddoppio
+def Raddoppio():
+    for i in range(0, numGiocatori): # si può raddoppiare solo se il valore della mano è tra 9 e 11
+        if Giocatori[i].bet > 0:
+            if not Giocatori[i].blackjack and not Giocatori[i].split and Giocatori[i].soldi >= Giocatori[i].bet and Giocatori[i].valoreMano >= 9 and Giocatori[i].valoreMano <= 11:
                 while True:
                     try:
-                        assicura = input(Giocatori[i].nome+', vuoi assicurare la tua mano? (y/n): ')
-                        if assicura == 'y':
-                            Giocatori[i].assicura() # sottrae metà della puntata e la mette in assicurazione
+                        raddoppia = input(Giocatori[i].nome+', vuoi raddoppiare la tua puntata? (y/n): ')
+                        if raddoppia == 'y':
+                            Giocatori[i].raddoppia() # raddoppia la puntata e poi chiedi una sola carta
                             break
-                        elif assicura == 'n':
+                        elif raddoppia == 'n':
                             break
                         else:
                             print('Inserisci y o n')
@@ -257,25 +261,6 @@ def Assicurazione():
                     except:
                         print('Inserisci y o n')
                         continue
-
-# Controllo Raddoppio
-def Raddoppio():
-    for i in range(0, numGiocatori): # si può raddoppiare solo se il valore della mano è tra 9 e 11
-        if not Giocatori[i].blackjack and not Giocatori[i].split and Giocatori[i].soldi >= Giocatori[i].bet and Giocatori[i].valoreMano >= 9 and Giocatori[i].valoreMano <= 11:
-            while True:
-                try:
-                    raddoppia = input(Giocatori[i].nome+', vuoi raddoppiare la tua puntata? (y/n): ')
-                    if raddoppia == 'y':
-                        Giocatori[i].raddoppia() # raddoppia la puntata e poi chiedi una sola carta
-                        break
-                    elif raddoppia == 'n':
-                        break
-                    else:
-                        print('Inserisci y o n')
-                        continue
-                except:
-                    print('Inserisci y o n')
-                    continue
 
 # Controllo Split
 def EffettuaSplit(Player):
@@ -290,28 +275,29 @@ def EffettuaSplit(Player):
 
 def Split():
     for i in range(0, numGiocatori):
-        if not Giocatori[i].blackjack and Giocatori[i].soldi >= Giocatori[i].bet: # si può splittare solo se il valore delle carte è uguale
-            if (len(Giocatori[i].mano[0]) == 2 and len(Giocatori[i].mano[1]) == 2 and Giocatori[i].mano[0][0] == Giocatori[i].mano[1][0]) or (len(Giocatori[i].mano[0]) == 3 and len(Giocatori[i].mano[1]) == 3 and Giocatori[i].mano[0][1] == Giocatori[i].mano[1][1]):
-                while True:
-                    try:
-                        split = input(Giocatori[i].nome+', vuoi dividere la tua mano? (y/n): ')
-                        if split == 'y':
-                            Giocatori[i].split = True
-                            if Giocatori[i].mano[1] == '1c' or Giocatori[i].mano[1] == '1q 'or Giocatori[i].mano[1] == '1f' or Giocatori[i].mano[1] == '1p':
-                                Giocatori[i].valoreMano = 11 # se ha due assi passi da 12 a 11 dividendoli
+        if Giocatori[i].bet > 0:
+            if not Giocatori[i].blackjack and Giocatori[i].soldi >= Giocatori[i].bet: # si può splittare solo se il valore delle carte è uguale
+                if (len(Giocatori[i].mano[0]) == 2 and len(Giocatori[i].mano[1]) == 2 and Giocatori[i].mano[0][0] == Giocatori[i].mano[1][0]) or (len(Giocatori[i].mano[0]) == 3 and len(Giocatori[i].mano[1]) == 3 and Giocatori[i].mano[0][1] == Giocatori[i].mano[1][1]):
+                    while True:
+                        try:
+                            split = input(Giocatori[i].nome+', vuoi dividere la tua mano? (y/n): ')
+                            if split == 'y':
+                                Giocatori[i].split = True
+                                if Giocatori[i].mano[1] == '1c' or Giocatori[i].mano[1] == '1q 'or Giocatori[i].mano[1] == '1f' or Giocatori[i].mano[1] == '1p':
+                                    Giocatori[i].valoreMano = 11 # se ha due assi passi da 12 a 11 dividendoli
+                                else:
+                                    Giocatori[i].valoreMano = int(Giocatori[i].valoreMano/2) # negli altri casi il valore della mano si dimezza
+                                EffettuaSplit(Giocatori[i])
+                                break
+                            elif split == 'n':
+                                break
                             else:
-                                Giocatori[i].valoreMano = int(Giocatori[i].valoreMano/2) # negli altri casi il valore della mano si dimezza
-                            EffettuaSplit(Giocatori[i])
-                            break
-                        elif split == 'n':
-                            break
-                        else:
+                                print('Inserisci y o n')
+                                continue
+                        except Exception as e:
+                            print(e)
                             print('Inserisci y o n')
                             continue
-                    except Exception as e:
-                        print(e)
-                        print('Inserisci y o n')
-                        continue
 
 def DelSplit():
     if len(Giocatori)>numGiocatori:
@@ -382,6 +368,7 @@ class AgenteIA(Giocatore):
         self.mazzo = mazzo_intero.copy() * num_mazzi # mazzo_intero e num_mazzi compongono la KB iniziale dell'agente
         self.carteUscite = []                        # tutti gli altri parametri sono osservazioni della partita 
         self.manoDealer = []
+        self.BetUnits = 0.01 * self.soldi
 
     def resetMazzo(self): # funzione per resettare il mazzo quando viene rimescolato raggiunta la taglia
         self.mazzo = self.mazzo_intero.copy() * numDiMazzi
@@ -520,10 +507,7 @@ class AgenteIA(Giocatore):
         for m in dictValMyHand:
             for d in dictValDealerHand:
                 if m == 22:
-                    if d == 22:
-                        probDrawPasso += dictValMyHand[m]*dictValDealerHand[d]
-                    else:
-                        probLosePasso += dictValMyHand[m]*dictValDealerHand[d]
+                    probLosePasso += dictValMyHand[m]*dictValDealerHand[d]
                 elif d == 22:
                     probWinPasso += dictValMyHand[m]*dictValDealerHand[d]
                 else:
@@ -556,10 +540,7 @@ class AgenteIA(Giocatore):
             for m in dictValMyHand2:
                 for d in dictValDealerHand2:
                     if m == 22:
-                        if d == 22:
-                            probDrawCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
-                        else:
-                            probLoseCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
+                        probLoseCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
                     elif d == 22:
                         probWinCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
                     else:
@@ -570,13 +551,29 @@ class AgenteIA(Giocatore):
                         else:
                             probLoseCarta += dictValMyHand2[m]*dictValDealerHand2[d]/lenMazzo
 
-        chooseCarta = probWinCarta + probDrawCarta*0.2 - probLoseCarta
-        choosePasso = probWinPasso + probDrawPasso*0.2 - probLosePasso
+        chooseCarta = probWinCarta + probDrawCarta*0.2
+        choosePasso = probWinPasso + probDrawPasso*0.2
 
         if chooseCarta > choosePasso:
             return 1 # carta
         else:
             return 0 # passo
+        
+    def chooseBet(self):
+        RunningCount = 0
+        for carta in self.carteUscite:
+            if carta[0] == '1':
+                RunningCount -= 1
+            elif carta[0] == '2' or carta[0] == '3' or carta[0] == '4' or carta[0] == '5' or carta[0] == '6':
+                RunningCount += 1
+        numMazziRimanenti = len(self.mazzo)/52
+        TrueCount = int(RunningCount/numMazziRimanenti)
+        if TrueCount < 0:
+            return 0
+        if TrueCount == 0:
+            return self.BetUnits
+        else:
+            return int((TrueCount+1)*self.BetUnits)
     
 # definizione di dealer
 class dealer:
@@ -635,20 +632,37 @@ creaMazzo()
 
 ## Loop di gioco ##
 # da finire di aggiungere agentiIA: assicurazione, split, raddoppio.
-
+cont0player = 0
 while True:
     print("inizio partita")
     PuntataIniziale() # fase di puntata iniziale
+    flag_AtLeastOnePlayer = False
     for i in range(0, numGiocatori):
-        Giocatori[i].addCard(PescaCarta()) # distribuzione delle carte: giocatori, dealer, giocatori, dealer
+        if Giocatori[i].bet > 0:
+            flag_AtLeastOnePlayer = True
+            Giocatori[i].addCard(PescaCarta()) # distribuzione delle carte: giocatori, dealer, giocatori, dealer
     for j in range(0, numAgenti):
-        Agenti[j].addCard(PescaCarta())
+        if Agenti[j].bet > 0:
+            flag_AtLeastOnePlayer = True
+            Agenti[j].addCard(PescaCarta())
+    if flag_AtLeastOnePlayer == False:
+        print("nessun giocatore ha puntato")
+        cont0player += 1
+        if cont0player == 3:
+            print("reset del tavolo")
+            cont0player = 0
+            creaMazzo()
+            for j in range(0, numAgenti):
+                Agenti[j].resetMazzo()
+        continue
     Dealer.addCard(PescaCarta())
     for i in range(0, numGiocatori):
-        Giocatori[i].addCard(PescaCarta())
+        if Giocatori[i].bet > 0:
+            Giocatori[i].addCard(PescaCarta())
     for j in range(0, numAgenti):
-        Agenti[j].addCardToDealer(Dealer.mano[0])
-        Agenti[j].addCard(PescaCarta())
+        if Agenti[j].bet > 0:
+            Agenti[j].addCardToDealer(Dealer.mano[0])
+            Agenti[j].addCard(PescaCarta())
     Dealer.addCard(PescaCarta())
     print('Dealer: '+Dealer.mano[0]+', *')
     for i in range(0, numGiocatori):
@@ -668,27 +682,28 @@ while True:
             print(Giocatori[i].toStr()+', '+Giocatori[i].toStrMano())
 
         for i in range(0, numGiocatori): # fase di gioco in cui i giocatori chiedono carte
-            while True:
-                try:
-                    if Giocatori[i].valoreMano == 21: # se il giocatore fa 21 non può chiedere altre carte (21 != bj)
-                        break
-                    scelta = input(Giocatori[i].nome+', vuoi chiedere una carta? (y/n): ')
-                    if scelta == 'y':
-                        Giocatori[i].addCard(PescaCarta())
-                        print(Giocatori[i].toStrMano())
-                        if Giocatori[i].sballa:
-                            print('Hai sballato') # idem se sballa (>21)
-                            break 
-                        elif Giocatori[i].doppio:
+            if Giocatori[i].bet > 0:
+                while True:
+                    try:
+                        if Giocatori[i].valoreMano == 21: # se il giocatore fa 21 non può chiedere altre carte (21 != bj)
                             break
-                    elif scelta == 'n':
-                        break
-                    else:
+                        scelta = input(Giocatori[i].nome+', vuoi chiedere una carta? (y/n): ')
+                        if scelta == 'y':
+                            Giocatori[i].addCard(PescaCarta())
+                            print(Giocatori[i].toStrMano())
+                            if Giocatori[i].sballa:
+                                print('Hai sballato') # idem se sballa (>21)
+                                break 
+                            elif Giocatori[i].doppio:
+                                break
+                        elif scelta == 'n':
+                            break
+                        else:
+                            print('Inserisci y o n')
+                            continue
+                    except:
                         print('Inserisci y o n')
                         continue
-                except:
-                    print('Inserisci y o n')
-                    continue
             if Giocatori[i].split: # finiti i giocatori originali, si passa ai giocatori clonati (ossia gli split)
                 for j in range(numGiocatori,len(Giocatori)):
                     if Giocatori[j].nome == Giocatori[i].nome+'_split':
@@ -715,22 +730,23 @@ while True:
                                 continue
 
         for j in range(0, numAgenti):
-            while True:
-                Agenti[j].updateMazzo(CarteUscite)
-                if Agenti[j].valoreMano == 21:
-                    break
-                scelta = Agenti[j].ChooseCarta(Agenti[j].mano,Dealer.mano)
-                #print(Agenti[j].nome+', '+'carta' if scelta == 1 else 'passo')
-                if scelta == 1:
-                    Agenti[j].addCard(PescaCarta())
-                    #print(Agenti[j].toStrMano())
-                    if Agenti[j].sballa:
-                        #print(Agenti[j].nome+', sballato')
+            if Agenti[j].bet > 0:
+                while True:
+                    Agenti[j].updateMazzo(CarteUscite)
+                    if Agenti[j].valoreMano == 21:
                         break
-                    elif Agenti[j].doppio:
+                    scelta = Agenti[j].ChooseCarta(Agenti[j].mano,Dealer.mano)
+                    #print(Agenti[j].nome+', '+'carta' if scelta == 1 else 'passo')
+                    if scelta == 1:
+                        Agenti[j].addCard(PescaCarta())
+                        #print(Agenti[j].toStrMano())
+                        if Agenti[j].sballa:
+                            #print(Agenti[j].nome+', sballato')
+                            break
+                        elif Agenti[j].doppio:
+                            break
+                    else:
                         break
-                else:
-                    break
 
         #print('Dealer: '+Dealer.toStrMano())
         while Dealer.valoreMano < 17:
@@ -747,7 +763,7 @@ while True:
     for i in range(0, numGiocatori):
         Giocatori[i].resetMano() # resetta le mani dei giocatori
     for j in range(0, numAgenti):
-        Agenti[j].resetMano()
+        Agenti[j].resetMano() # resetta le mani degli agenti
     Dealer.resetMano() # resetta la mano del dealer
 
     for i in range(0, len(Giocatori)):
@@ -775,15 +791,17 @@ while True:
     if len(Carte) < Taglia: # controllo raggiungimento della taglia
         print("rimescola il mazzo")
         creaMazzo() # se raggiunta, rimescolamento del mazzo
+        for j in range(0, numAgenti):
+            Agenti[j].resetMazzo()
 
 # fine partita
 
 ## Note: ##
 # - da finire la classe AgenteIA
-#    - implementare il codice in agente.py nella classe agenteIA come motore di decisione
-#    - valutare se implementarlo in un unico file o se importarlo come file esterno
-# - effettuare ulteriori debugging per testare se tutte le funzioni di gioco funzionano bene
-# - implementare nel loop di gioco tutte le fasi dell'agenteIA
-# - decidere come permettere all'agenteIA di osservare le carte sul tavolo
-#    - o si implementano come variabili globali
-#    - o si passano come parametri ogni volta che c'è un cambiamento nel loop di gioco (ad esempio quando il dealer pesca una carta la si manda sia all'agente che al dealer)
+#    - implementare il codice in agente.py nella classe agenteIA come motore di decisione ✓
+#    - valutare se implementarlo in un unico file o se importarlo come file esterno ✓
+# - effettuare ulteriori debugging per testare se tutte le funzioni di gioco funzionano bene 
+# - implementare nel loop di gioco tutte le fasi dell'agenteIA 
+# - decidere come permettere all'agenteIA di osservare le carte sul tavolo ✓
+#    - o si implementano come variabili globali ✕
+#    - o si passano come parametri ogni volta che c'è un cambiamento nel loop di gioco (ad esempio quando il dealer pesca una carta la si manda sia all'agente che al dealer) ✓
