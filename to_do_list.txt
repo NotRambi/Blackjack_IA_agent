@@ -1,0 +1,10 @@
+Blackjack:
+- aggiungere track statistiche
+- aggiungere grafici 
+- aggiungere GUI
+- creare distinzione tra simulazioni veloci e partita
+
+IA:
+- choose raddoppio
+- choose split
+- choose assicurazione
