@@ -1,7 +1,8 @@
 Blackjack:
 - aggiungere track statistiche
 - aggiungere grafici 
-- aggiungere GUI
+- aggiungere GUI menu iniziale ✓
+- aggiungere GUI di gioco
 - creare distinzione tra simulazioni veloci e partita
 
 IA:
