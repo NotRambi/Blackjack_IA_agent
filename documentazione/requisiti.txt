@@ -1,12 +1,44 @@
-Blackjack:
-Il Blackjack è un gioco di carte che si gioca con uno o più mazzi di carte, in un tavolo da gioco devono essere presenti un Dealer ed uno o più giocatori, i quali dovranno giocare contro il Dealer indipendentemente dagli altri partecipante al tavolo. L'obiettivo del gioco è ottenere una mano il cui valore totale sia il più vicino possibile a 21 senza superarlo. Le carte numeriche valgono il loro valore facciale, le figure (fante, regina, re) valgono 10 punti ciascuna, e l'asso può valere 1 o 11 punti, a seconda di quale valore aiuti di più la mano. All'inizio del turno, ciascun giocatore e il dealer ricevono due carte. I giocatori possono poi scegliere di "chiedere" una carta in più per avvicinarsi a 21, o "stare" con il totale attuale. Alcuni giocatori possono anche scegliere di "raddoppiare" la loro scommessa, ricevendo una sola carta aggiuntiva, oppure "dividere" se hanno due carte dello stesso valore, creando due mani separate. Il dealer gioca dopo che tutti i giocatori hanno completato le loro azioni; deve continuare a pescare carte finché il suo totale è inferiore a 17. Se il totale del dealer supera 21, i giocatori che non hanno "sforato" (cioè, che non hanno superato 21) vincono. Se il dealer non supera 21, vincono le mani dei giocatori che hanno un totale superiore a quello del dealer senza superare 21. Se un giocatore ottiene un Blackjack, ovvero un asso e una carta da 10 punti con le prime due carte, vince automaticamente, a meno che il dealer non abbia anch'esso un Blackjack, in tal caso la mano è considerata un pareggio.
+Descrizione problema:
+Il Blackjack è un gioco di carte che si gioca con uno o più mazzi di carte, in un tavolo da gioco devono essere presenti un Dealer ed uno o più giocatori, i quali dovranno giocare contro il Dealer indipendentemente dagli altri partecipante al tavolo. L'obiettivo del gioco è ottenere una mano il cui valore totale sia il più vicino possibile a 21 senza superarlo. Le carte numeriche valgono il loro valore facciale, le figure (fante, regina, re) valgono 10 punti ciascuna, e l'asso può valere 1 o 11 punti, a seconda di quale valore aiuti di più la mano (11 quando la mano vale meno di 21 e 1 quando la mano supera il 21). All'inizio del turno, ciascun giocatore e il dealer ricevono due carte, tutte scoperte tranne la seconda del Dealer. I giocatori possono poi a turno scegliere di "chiedere" una o più carte in più per avvicinarsi a 21, o "stare" con il totale attuale.
+Prima di iniziare a chiedere le carte i giocatori hanno altre due possibilità in base alle condizioni iniziali:
+- Se il valore della mano è tra 9 e 11 possono chiedere di "raddoppiare", ossia di duplicare la scommessa ma limitandosi poi ad avere soltanto 3 carte finali;
+- Se hanno due carte uguali per numero possono chiedere di "dividere", ossia di dividerle in due mani separate ed indipendenti entrambe inizialmente con una carta; 
+Il dealer gioca dopo che tutti i giocatori hanno completato i loro turni. Esso deve continuare a pescare carte finché il suo totale è inferiore a 17.
+Se il totale del dealer supera 21, i giocatori che non hanno "sforato" (cioè, che non hanno superato 21) vincono.
+Se il dealer non supera 21, vincono le mani dei giocatori che hanno un totale superiore a quello del dealer senza superare 21. 
+Se un giocatore ottiene un Blackjack, ovvero un asso e una carta da 10 punti con le prime due carte, vince automaticamente, a meno che il dealer non abbia anch'esso un Blackjack, in tal caso la mano è considerata un pareggio.
+Nel caso in cui un giocatore vinca con blackjack allora la sua vincita sarà di 2.5x invece del 2x.
+Un giocatore deve poter partecipare ad un tavolo, fare delle puntate, ricevere le carte iniziali, nel suo turno fare le sue scelte ed infine vincere o perdere la sua scommessa.
+Un agente IA deve poter fare le stesse azioni di un giocatore umano ma senza input esterni e massimizzando la vincita attesa.
+Un dealer deve essere presente in ogni tavolo e deve rispettare le regole del gioco garantendo una partita corretta per i giocatori.
 
-Requisiti:
-- Sviluppare un ambiente di gioco funzionante 
-- Sviluppare un algoritmo che permetta l'automatismo del Dealer
-- Permettere ad un giocatore umano di partecipare ad una partita
-- Sviluppare un agente intelligente in grado di giocare:
-	- l'agente deve poter comprendere la situazione sul tavolo per inferire sulla sua kb
-	- l'agente deve riuscire a decidere quanto puntare nel suo turno al fine di massimizzare la vincita attesa
-	- l'agente deve saper decidere se chiamare carta o stare al fine di massimizzare la probabilità di vincita attesa
-	- l'agente deve saper decidere se sfruttare le altre funzionalità del gioco per massimizzare la vincita attesa
+Raccolta dei requisiti:
+
+1. Sviluppare un ambiente di gioco funzionante
+	1.1. Gestione del mazzo e delle carte da gioco
+	1.2. Gestione dei partecipanti al tavolo
+	1.3. Gestione dei turni
+	1.4. Gestione delle vincite 
+
+2. Sviluppare un algoritmo che permetta l'automatismo del Dealer
+	2.1. Realizzazione di una classe Dealer
+	2.2. Realizzazione motore decisionale del Dealer
+
+3. Permettere ad un giocatore umano di partecipare ad una partita
+	3.1. Realizzazione di una classe Giocatore
+	3.2. Creazione metodi e funzioni di gioco per il giocatore
+	3.3. Creazione di interfaccia utente per prendere in input le scelte del giocatore
+	3.4. Estensione dell'interfaccia grafica per dare in output lo stato della partita al giocatore
+	3.5. Interfaccia grafica (Opzionale)
+
+4. Sviluppare un agente intelligente in grado di giocare
+	4.1. L'agente deve poter comprendere la situazione sul tavolo per inferire sulla sua kb
+	4.2. L'agente deve riuscire a decidere quanto puntare nel suo turno al fine di massimizzare la vincita attesa
+	4.3. L'agente deve saper decidere se chiamare carta o stare al fine di massimizzare la probabilità di vincita attesa
+	4.4. L'agente deve saper decidere se sfruttare le altre funzionalità del gioco per massimizzare la vincita attesa
+
+5. Sviluppare un ambiente che permetta all'utente di visualizzare l'andamento della partita
+	5.1. L'interfaccia deve mostrare lo sviluppo dell'ambiente al punto 1.
+	5.3. L'interfaccia deve mostrare le scelte del Dealer
+	5.2. L'interfaccia deve integrare quelle del punto 3.
+	5.3. L'interfaccia deve mostrare le scelte degli eventuali agenti IA
