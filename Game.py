@@ -1,11 +1,13 @@
 import Blackjack
+import Tavolo
 import random
+from threading import Thread
 
 class Game:
-    def __init__(self, np, nai, sm, sts, anim, tmp):
+    def __init__(self, np, nai, nm, sm, sts, vid, tmp):
 
         # Variabili globali
-        self.numDiMazzi = 2 # solitamente da 2 a 6 mazzi
+        self.numDiMazzi = nm # solitamente da 2 a 6 mazzi
         self.mazzo = ['1c','1q','1f','1p','2c','2q','2f','2p','3c','3q','3f','3p','4c','4q','4f','4p','5c','5q','5f','5p','6c','6q','6f','6p','7c','7q','7f','7p','8c','8q','8f','8p','9c','9q','9f','9p','10c','10q','10f','10p','11c','11q','11f','11p','12c','12q','12f','12p','13c','13q','13f','13p']
         self.Carte = []
         self.CarteUscite = []
@@ -14,12 +16,14 @@ class Game:
         self.Agenti = []
         self.Dealer = Blackjack.dealer()
 
+        self.contMani = 0
+
         # Parametri di gioco
         self.numGiocatori = np # giocatori umani
         self.numAgenti = nai # agenti ia
         self.soldiIniziali = sm # soldi iniziali per giocatori e agenti
         self.saveStats = sts # salvataggio statistiche
-        self.animazioni = anim # animazioni
+        self.video = vid # interfaccia grafica
 
         # cartella temporanea condivisa
         self.tmp = tmp 
@@ -300,6 +304,9 @@ class Game:
 
     # Funzione principale per il gioco
 
+    def StartWindow(self, win):
+        win.run()
+
     # Main
     def RunGame(self):
         # inizializzazione giocatori e agenti
@@ -309,11 +316,33 @@ class Game:
         for i in range(0, self.numAgenti):
             self.Agenti.append(Blackjack.AgenteIA('Agente_'+str(i+1), self.soldiIniziali, self.mazzo, self.numDiMazzi))
 
+        if self.video:
+            # inizializzazione Finestra di gioco
+            Win = Tavolo.Screen()
+            Thread(target=self.StartWindow, args=(Win,)).start()
+            tavolo = Win.getTable()
+            tavolo.showCards(7, '1c')
+
+        if self.saveStats:
+            # inizializzazione statistiche
+            self.statsFile = open(self.tmp + "/stats.txt", "w")
+            titolo = "Mano|"
+            for i in range(0, self.numGiocatori):
+                titolo += self.Giocatori[i].nome+'|'
+            for j in range(0, self.numAgenti):
+                titolo += self.Agenti[j].nome+'|'
+            self.statsFile.write(titolo+'\n')
+            Mano = [self.contMani, []]
+            for i in range(0, self.numGiocatori):
+                Mano[1].append(self.Giocatori[i].soldi)
+            for j in range(0, self.numAgenti):
+                Mano[1].append(self.Agenti[j].soldi)
+            self.statsFile.write(str(Mano)+'\n')
+
         # creazione mazzo 
         self.creaMazzo()
 
         ## Loop di gioco ##
-        cont0player = 0
         while True:
             print("inizio partita")
             self.PuntataIniziale() # fase di puntata iniziale
@@ -327,13 +356,10 @@ class Game:
                     flag_AtLeastOnePlayer = True
                     self.Agenti[j].addCard(self.PescaCarta())
             if flag_AtLeastOnePlayer == False:
-                print("nessun giocatore ha puntato,",cont0player+1)
-                cont0player += 1
-                if cont0player == 3:
-                    print('Arrivederci')
-                    return
-                continue
-            cont0player = 0
+                print("nessun giocatore ha puntato, Arrivederci")
+                if self.saveStats:
+                    self.statsFile.close()
+                return
             self.Dealer.addCard(self.PescaCarta())
             for i in range(0, self.numGiocatori):
                 if self.Giocatori[i].bet > 0:
@@ -449,6 +475,16 @@ class Game:
                 print(self.Giocatori[i].toStr()) 
             for j in range(0, len(self.Agenti)):
                 print(self.Agenti[j].toStr())
+
+            # aggiunta statistiche
+            self.contMani += 1
+            if self.saveStats:
+                Mano = [self.contMani, []]
+                for i in range(0, self.numGiocatori):
+                    Mano[1].append(self.Giocatori[i].soldi)
+                for j in range(0, self.numAgenti):
+                    Mano[1].append(self.Agenti[j].soldi)
+                self.statsFile.write(str(Mano)+'\n')
             
             while True: # loop (provvisorio) per continuare a giocare o uscire dalla partita
                 continua = True
@@ -460,10 +496,14 @@ class Game:
                         continua = False
                 except:
                     print('Arrivederci')
+                    if self.saveStats:
+                        self.statsFile.close()
                     return
                 if continua:
                     break
                 print('Arrivederci')
+                if self.saveStats:
+                    self.statsFile.close()
                 return
 
             if len(self.Carte) < self.Taglia: # controllo raggiungimento della taglia

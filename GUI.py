@@ -4,6 +4,8 @@ from tkinter import *
 from tkinter import messagebox
 from threading import Thread
 import tempfile
+import matplotlib.pyplot as plt
+import ast
 import Game
 
 ### CLASSI ###
@@ -20,11 +22,14 @@ class GUI(object):
         self.t = None
 
         # Parametri di gioco
-        self.numPlayers = 1
-        self.numIA = 0
+        self.numPlayers = 0
+        self.numIA = 1
         self.startingMoney = 1000
+        self.numMazzi = 4 # da 2 a 6
         self.stats = False
-        self.animations = True
+        self.Video = False
+        self.plot = None
+        self.stats_f = None
 
         # Finestra GUI
         self.window = Tk()
@@ -37,6 +42,14 @@ class GUI(object):
 
     def on_closing(self):
         if messagebox.askokcancel("Esci", "Vuoi uscire?"):
+            if self.t is not None:
+                self.stopGame()
+                self.t.join()
+            if self.stats:
+                if self.plot is not None:
+                    self.plot.close()
+                if self.stats_f is not None:
+                    self.stats_f.close()
             self.tempfolder.cleanup() # cancella la cartella temporanea
             self.window.destroy() # chiude la finestra
 
@@ -99,13 +112,13 @@ class GUI(object):
         self.f.write("0")  # questo valore indica che il gioco non deve fermarsi  
         self.f.close()    
         if self.t is None:
-            NewGame = Game.Game(self.numPlayers, self.numIA, self.startingMoney, self.stats, self.animations, self.tempfolder.name)
+            NewGame = Game.Game(self.numPlayers, self.numIA, self.numMazzi, self.startingMoney, self.stats, self.Video, self.tempfolder.name)
             self.t = Thread(target=NewGame.RunGame)
             self.t.start()
         elif not self.t.is_alive():
-            NewGame = Game.Game(self.numPlayers, self.numIA, self.startingMoney, self.stats, self.animations, self.tempfolder.name)
+            NewGame = Game.Game(self.numPlayers, self.numIA, self.numMazzi, self.startingMoney, self.stats, self.Video, self.tempfolder.name)
             self.t = Thread(target=NewGame.RunGame)
-            self.t.start()
+            self.t.start()      
 
     def stopGame(self):
         path = self.tempfolder.name + "/temp.txt"
@@ -114,8 +127,40 @@ class GUI(object):
         self.f.close()
 
     def Game_backToHP(self):
-        self.clearGame()
-        self.HomePage()
+        if not self.t.is_alive():
+            self.clearGame()
+            self.HomePage()
+            if self.stats:
+                stats_path = self.tempfolder.name + "/stats.txt"
+                self.stats_f = open(stats_path, "r")
+
+                # Ignora la prima riga
+                self.stats_f.readline()
+
+                # Inizializza le liste per le ascisse e le ordinate
+                hands = []
+                money = [[] for _ in range(self.numPlayers + self.numIA)]
+
+                # Leggi i dati dal file
+                for line in self.stats_f:
+                    data = ast.literal_eval(line.strip())
+                    hands.append(data[0])
+                    for i in range(len(data[1])):
+                        money[i].append(data[1][i])
+
+                # Crea il grafico
+                self.plot = plt
+                self.plot.figure(figsize=(10, 6))
+                for i in range(len(money)):
+                    self.plot.plot(hands, money[i], label=f'Player {i+1}')
+
+                self.plot.xlabel('Mano')
+                self.plot.ylabel('Soldi')
+                self.plot.title('Andamento dei Soldi per Mano')
+                self.plot.legend()
+                self.plot.grid(True)
+                self.plot.show()
+                self.stats_f.close()
 
     def clearGame(self):
         self.Game_title.destroy()
@@ -172,10 +217,16 @@ class GUI(object):
 
         # input
         self.starting_money_label = Label(self.window, text="Soldi iniziali", font=("Arial", 14), bg="#222", fg="#eee")
-        self.starting_money_label.place(x=150, y=380, anchor="center")
+        self.starting_money_label.place(x=70, y=380, anchor="center")
         self.starting_money_entry = Entry(self.window, font=("Arial", 14), bg="#333", fg="#eee", relief="flat", borderwidth=0, highlightbackground="#222", insertbackground="#eee")
         self.starting_money_entry.insert(0, self.startingMoney)
-        self.starting_money_entry.place(x=250, y=380, anchor="center", width=60, height=35)
+        self.starting_money_entry.place(x=160, y=380, anchor="center", width=60, height=35)
+
+        self.numMazzi_label = Label(self.window, text="Num mazzi", font=("Arial", 14), bg="#222", fg="#eee")
+        self.numMazzi_label.place(x=250, y=380, anchor="center")
+        self.numMazzi_entry = Entry(self.window, font=("Arial", 14), bg="#333", fg="#eee", relief="flat", borderwidth=0, highlightbackground="#222", insertbackground="#eee")
+        self.numMazzi_entry.insert(0, self.numMazzi)
+        self.numMazzi_entry.place(x=340, y=380, anchor="center", width=60, height=35)
 
         # buttons
         self.stats_label = Label(self.window, text="Statistiche", font=("Arial", 14), bg="#222", fg="#eee")
@@ -186,13 +237,13 @@ class GUI(object):
             self.statistics_btn  = Button(self.window, text="OFF", font=("Arial", 14), command=self.statisticsBtn, bg="#333", fg="#eee", activebackground="#111", activeforeground="#eee", borderwidth=0)
         self.statistics_btn.place(x=250, y=430, anchor="center", width=60, height=35)
 
-        self.anim_label = Label(self.window, text="Animazioni", font=("Arial", 14), bg="#222", fg="#eee")
+        self.anim_label = Label(self.window, text="Video", font=("Arial", 14), bg="#222", fg="#eee")
         self.anim_label.place(x=150, y=480, anchor="center")
-        if self.animations:
-            self.animations_btn  = Button(self.window, text="ON", font=("Arial", 14), command=self.animationsBtn, bg="#333", fg="#eee", activebackground="#111", activeforeground="#eee", borderwidth=0)
+        if self.Video:
+            self.Video_btn  = Button(self.window, text="ON", font=("Arial", 14), command=self.VideoBtn, bg="#333", fg="#eee", activebackground="#111", activeforeground="#eee", borderwidth=0)
         else:
-            self.animations_btn  = Button(self.window, text="OFF", font=("Arial", 14), command=self.animationsBtn, bg="#333", fg="#eee", activebackground="#111", activeforeground="#eee", borderwidth=0)
-        self.animations_btn.place(x=250, y=480, anchor="center", width=60, height=35)
+            self.Video_btn  = Button(self.window, text="OFF", font=("Arial", 14), command=self.VideoBtn, bg="#333", fg="#eee", activebackground="#111", activeforeground="#eee", borderwidth=0)
+        self.Video_btn.place(x=250, y=480, anchor="center", width=60, height=35)
 
         self.Back_Button = Button(self.window, text="Indietro", font=("Arial", 14), command=self.Setting_backToHP, bg="#333", fg="#eee", activebackground="#111", activeforeground="#eee", borderwidth=0)
         self.Back_Button.place(x=70, y=560, anchor="center", width=100, height=40)
@@ -237,15 +288,16 @@ class GUI(object):
         else:
             self.statistics_btn.config(text="OFF")
 
-    def animationsBtn(self):
-        self.animations = not self.animations
-        if self.animations:
-            self.animations_btn.config(text="ON")
+    def VideoBtn(self):
+        self.Video = not self.Video
+        if self.Video:
+            self.Video_btn.config(text="ON")
         else:
-            self.animations_btn.config(text="OFF")
+            self.Video_btn.config(text="OFF")
 
     def Setting_backToHP(self):
         self.startingMoney = int(self.starting_money_entry.get())
+        self.numMazzi = int(self.numMazzi_entry.get())
         self.clearSettings()
         self.HomePage()
 
@@ -257,10 +309,12 @@ class GUI(object):
         self.IA_slider.destroy()
         self.starting_money_label.destroy()
         self.starting_money_entry.destroy()
+        self.numMazzi_label.destroy()
+        self.numMazzi_entry.destroy()
         self.stats_label.destroy()
         self.statistics_btn.destroy()
         self.anim_label.destroy()
-        self.animations_btn.destroy()
+        self.Video_btn.destroy()
         self.Back_Button.destroy()
 
 
