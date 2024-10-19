@@ -81,6 +81,7 @@ class Game:
                         break
                     else:
                         self.Agenti[j].soldi -= self.Agenti[j].bet
+                        print(self.Agenti[j].nome+' ha scommesso '+str(self.Agenti[j].bet))
                         break
                 except:
                     continue
@@ -397,7 +398,7 @@ class Game:
                                     self.Giocatori[i].addCard(self.PescaCarta())
                                     print(self.Giocatori[i].toStrMano())
                                     if self.Giocatori[i].sballa:
-                                        print('Hai sballato') # idem se sballa (>21)
+                                        print(self.Giocatori[i].nome+', hai sballato') # idem se sballa (>21)
                                         break 
                                     elif self.Giocatori[i].doppio:
                                         break
@@ -421,7 +422,7 @@ class Game:
                                             self.Giocatori[j].addCard(self.PescaCarta())
                                             print(self.Giocatori[j].toStrMano())
                                             if self.Giocatori[j].sballa:
-                                                print('Hai sballato')
+                                                print(self.Giocatori[j].nome+', hai sballato')
                                                 break
                                             elif self.Giocatori[i].doppio:
                                                 break
@@ -441,24 +442,24 @@ class Game:
                             if self.Agenti[j].valoreMano == 21:
                                 break
                             scelta = self.Agenti[j].ChooseCarta(self.Agenti[j].mano,self.Dealer.mano)
-                            #print(Agenti[j].nome+', '+'carta' if scelta == 1 else 'passo')
+                            print(self.Agenti[j].nome+', carta' if scelta == 1 else self.Agenti[j].nome+', passa')
                             if scelta == 1:
                                 self.Agenti[j].addCard(self.PescaCarta())
-                                #print(Agenti[j].toStrMano())
+                                print(self.Agenti[j].toStrMano())
                                 if self.Agenti[j].sballa:
-                                    #print(Agenti[j].nome+', sballato')
+                                    print(self.Agenti[j].nome+', ha sballato')
                                     break
                                 elif self.Agenti[j].doppio:
                                     break
                             else:
                                 break
 
-                #print('Dealer: '+Dealer.toStrMano())
+                print('Dealer: '+self.Dealer.toStrMano())
                 while self.Dealer.valoreMano < 17:
                     self.Dealer.addCard(self.PescaCarta())
-                    #print('Dealer: '+Dealer.toStrMano())
+                    print('Dealer: '+self.Dealer.toStrMano())
                     if self.Dealer.sballa:
-                        #print('Dealer sballato')
+                        print('Dealer sballato')
                         break
 
             self.Vincite() # finiti i turni si controllano le vincite
