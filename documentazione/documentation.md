@@ -1,4 +1,4 @@
-# Documentation for the Blackjack Simulation Project
+# Documentation for the Blackjack AI Agent Project
 
 ## Simulation.py
 
