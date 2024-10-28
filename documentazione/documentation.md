@@ -2,118 +2,118 @@
 
 ## Simulation.py
 
-This script is responsible for running multiple simulations of the Blackjack game using multi-threading. It allows for the configuration of various parameters such as the number of AI agents, naive agents, decks, starting money, hands per simulation, and the number of simulations. The results of each simulation are collected and statistical analysis is performed.
+Questo script è responsabile dell'esecuzione di più simulazioni del gioco del Blackjack utilizzando il multi-threading. Permette la configurazione di vari parametri come il numero di agenti AI, agenti ingenui, mazzi, denaro iniziale, mani per simulazione e il numero di simulazioni. I risultati di ogni simulazione vengono raccolti e viene eseguita un'analisi statistica.
 
-### Functions
+### Funzioni
 
-- `run_game_with_queue(game, queue)`: Runs a game instance and puts the result in a queue.
+- `run_game_with_queue(game, queue)`: Esegue un'istanza di gioco e mette il risultato in una coda.
 
-### Main Execution
+### Esecuzione Principale
 
-- Parses command-line arguments to set simulation parameters.
-- Initializes threads for each simulation.
-- Starts and joins threads to run simulations concurrently.
-- Collects results from the queue and calculates average results for each agent type.
-- Prints the simulation results and statistics.
+- Analizza gli argomenti della riga di comando per impostare i parametri della simulazione.
+- Inizializza i thread per ogni simulazione.
+- Avvia e unisce i thread per eseguire le simulazioni contemporaneamente.
+- Raccoglie i risultati dalla coda e calcola i risultati medi per ogni tipo di agente.
+- Stampa i risultati e le statistiche della simulazione.
 
 ## Blackjack.py
 
-This file contains the classes for managing the Blackjack game, including players, AI agents, naive agents, and the dealer. Each class has methods for handling game actions such as betting, drawing cards, calculating hand values, and making decisions based on game state.
+Questo file contiene le classi per la gestione del gioco del Blackjack, inclusi giocatori, agenti AI, agenti ingenui e il dealer. Ogni classe ha metodi per gestire le azioni di gioco come scommettere, pescare carte, calcolare i valori delle mani e prendere decisioni in base allo stato del gioco.
 
-### Classes
+### Classi
 
-- `Giocatore`: Represents a player in the game.
-    - Methods: 
-        - `toStr()`: Returns a string representation of the player's state.
-        - `ValoreCarta(carta)`: Calculates the value of a card.
-        - `addCard(carta)`: Adds a card to the player's hand and updates the hand value.
-        - `toStrMano()`: Returns a string representation of the player's hand.
-        - `assicura()`: Ensures the player's hand.
-        - `raddoppia()`: Doubles the player's bet.
-        - `resetMano()`: Resets the player's hand at the end of a round.
+- `Giocatore`: Rappresenta un giocatore nel gioco.
+    - Metodi: 
+        - `toStr()`: Restituisce una rappresentazione in stringa dello stato del giocatore.
+        - `ValoreCarta(carta)`: Calcola il valore di una carta.
+        - `addCard(carta)`: Aggiunge una carta alla mano del giocatore e aggiorna il valore della mano.
+        - `toStrMano()`: Restituisce una rappresentazione in stringa della mano del giocatore.
+        - `assicura()`: Assicura la mano del giocatore.
+        - `raddoppia()`: Raddoppia la scommessa del giocatore.
+        - `resetMano()`: Resetta la mano del giocatore alla fine di un round.
 
-- `AgenteIA`: Represents an AI agent, inherits from `Giocatore`.
-    - Methods: 
-        - `resetMazzo()`: Resets the deck when reshuffled.
-        - `updateMazzo(uscite)`: Updates the deck with the cards that have been played.
-        - `resetMano()`: Resets the agent's hand at the end of a round.
-        - `addCardToDealer(carta)`: Updates the dealer's hand.
-        - `HandValueCalc(hand)`: Calculates the value of a hand.
-        - `InferenzaProbabilità(i, dictMazzo, lenMazzo, dictProbHand, flagAsso)`: Calculates the probability distribution of the dealer's hand.
-        - `ChooseCarta(MyHand, DealerHand)`: Decides whether to draw a card or pass.
-        - `chooseBet()`: Decides the bet amount based on the game state.
+- `AgenteIA`: Rappresenta un agente AI, eredita da `Giocatore`.
+    - Metodi: 
+        - `resetMazzo()`: Resetta il mazzo quando viene rimescolato.
+        - `updateMazzo(uscite)`: Aggiorna il mazzo con le carte che sono state giocate.
+        - `resetMano()`: Resetta la mano dell'agente alla fine di un round.
+        - `addCardToDealer(carta)`: Aggiorna la mano del dealer.
+        - `HandValueCalc(hand)`: Calcola il valore di una mano.
+        - `InferenzaProbabilità(i, dictMazzo, lenMazzo, dictProbHand, flagAsso)`: Calcola la distribuzione di probabilità della mano del dealer.
+        - `ChooseCarta(MyHand, DealerHand)`: Decide se pescare una carta o passare.
+        - `chooseBet()`: Decide l'importo della scommessa in base allo stato del gioco.
 
-- `AgenteNaive`: Represents a naive agent, inherits from `Giocatore`.
-    - Methods: 
-        - `HandValueCalc(hand)`: Calculates the value of a hand.
-        - `ChooseCarta(MyHand, DealerHand)`: Decides whether to draw a card or pass arbitrarily.
-        - `chooseBet()`: Decides the bet amount (fixed at 1% of the initial money).
-        - `addCardToDealer(carta)`: Updates the dealer's hand (not used in naive agent).
-        - `updateMazzo(uscite)`: Updates the deck (not used in naive agent).
-        - `resetMazzo()`: Resets the deck (not used in naive agent).
+- `AgenteNaive`: Rappresenta un agente ingenuo, eredita da `Giocatore`.
+    - Metodi: 
+        - `HandValueCalc(hand)`: Calcola il valore di una mano.
+        - `ChooseCarta(MyHand, DealerHand)`: Decide arbitrariamente se pescare una carta o passare.
+        - `chooseBet()`: Decide l'importo della scommessa (fissato all'1% del denaro iniziale).
+        - `addCardToDealer(carta)`: Aggiorna la mano del dealer (non usato nell'agente ingenuo).
+        - `updateMazzo(uscite)`: Aggiorna il mazzo (non usato nell'agente ingenuo).
+        - `resetMazzo()`: Resetta il mazzo (non usato nell'agente ingenuo).
 
-- `dealer`: Represents the dealer in the game.
-    - Methods: 
-        - `ValoreCarta(carta)`: Calculates the value of a card.
-        - `addCard(carta)`: Adds a card to the dealer's hand and updates the hand value.
-        - `toStrMano()`: Returns a string representation of the dealer's hand.
-        - `resetMano()`: Resets the dealer's hand at the end of a round.
+- `dealer`: Rappresenta il dealer nel gioco.
+    - Metodi: 
+        - `ValoreCarta(carta)`: Calcola il valore di una carta.
+        - `addCard(carta)`: Aggiunge una carta alla mano del dealer e aggiorna il valore della mano.
+        - `toStrMano()`: Restituisce una rappresentazione in stringa della mano del dealer.
+        - `resetMano()`: Resetta la mano del dealer alla fine di un round.
 
 ## GUI.py
 
-This file manages the graphical user interface (GUI) for the Blackjack game using the Tkinter library. It allows users to start a game, adjust settings, and view game statistics.
+Questo file gestisce l'interfaccia grafica (GUI) per il gioco del Blackjack utilizzando la libreria Tkinter. Permette agli utenti di avviare un gioco, regolare le impostazioni e visualizzare le statistiche del gioco.
 
-### Classes
+### Classi
 
-- `GUI`: Main class for the GUI.
-    - Methods: 
-        - `__init__()`: Initializes the GUI and its components.
-        - `on_closing()`: Handles the closing event of the GUI.
-        - `update()`: Updates the GUI.
-        - `run()`: Runs the main loop of the GUI.
-        - `HomePage()`: Displays the home page of the GUI.
-        - `PlayButton()`: Handles the play button click event.
-        - `SettingsButton()`: Handles the settings button click event.
-        - `clearHome()`: Clears the home page components.
-        - `GamePage()`: Displays the game page.
-        - `startGame()`: Starts a new game.
-        - `stopGame()`: Stops the current game.
-        - `Game_backToHP()`: Returns to the home page from the game page.
-        - `clearGame()`: Clears the game page components.
-        - `SettingsPage()`: Displays the settings page.
-        - `updateSlider(event)`: Updates the slider values for players and AI agents.
-        - `statisticsBtn()`: Toggles the statistics option.
-        - `VideoBtn()`: Toggles the video option.
-        - `Setting_backToHP()`: Returns to the home page from the settings page.
-        - `clearSettings()`: Clears the settings page components.
+- `GUI`: Classe principale per la GUI.
+    - Metodi: 
+        - `__init__()`: Inizializza la GUI e i suoi componenti.
+        - `on_closing()`: Gestisce l'evento di chiusura della GUI.
+        - `update()`: Aggiorna la GUI.
+        - `run()`: Esegue il ciclo principale della GUI.
+        - `HomePage()`: Visualizza la pagina iniziale della GUI.
+        - `PlayButton()`: Gestisce l'evento di clic sul pulsante di gioco.
+        - `SettingsButton()`: Gestisce l'evento di clic sul pulsante delle impostazioni.
+        - `clearHome()`: Cancella i componenti della pagina iniziale.
+        - `GamePage()`: Visualizza la pagina del gioco.
+        - `startGame()`: Avvia un nuovo gioco.
+        - `stopGame()`: Ferma il gioco corrente.
+        - `Game_backToHP()`: Torna alla pagina iniziale dalla pagina del gioco.
+        - `clearGame()`: Cancella i componenti della pagina del gioco.
+        - `SettingsPage()`: Visualizza la pagina delle impostazioni.
+        - `updateSlider(event)`: Aggiorna i valori dei cursori per i giocatori e gli agenti AI.
+        - `statisticsBtn()`: Attiva/disattiva l'opzione delle statistiche.
+        - `VideoBtn()`: Attiva/disattiva l'opzione video.
+        - `Setting_backToHP()`: Torna alla pagina iniziale dalla pagina delle impostazioni.
+        - `clearSettings()`: Cancella i componenti della pagina delle impostazioni.
 
-### Main Execution
+### Esecuzione Principale
 
-- Initializes and runs the GUI.
+- Inizializza ed esegue la GUI.
 
 ## Game.py
 
-This file contains the main game logic for the Blackjack game. It handles the initialization of players, agents, and the dealer, as well as the main game loop, including betting, drawing cards, checking for wins, and managing game state.
+Questo file contiene la logica principale del gioco del Blackjack. Gestisce l'inizializzazione dei giocatori, degli agenti e del dealer, nonché il ciclo principale del gioco, inclusi scommesse, pesca delle carte, verifica delle vincite e gestione dello stato del gioco.
 
-### Classes
+### Classi
 
-- `Game`: Main class for the game logic.
-    - Methods: 
-        - `__init__(np, nai, nm, sm, sts, vid, tmp, naiv, nmani, print)`: Initializes the game with the specified parameters.
-        - `creaMazzo()`: Creates and shuffles the deck.
-        - `PescaCarta()`: Draws a card from the deck.
-        - `PuntataIniziale()`: Handles the initial betting phase.
-        - `Vincite()`: Checks for wins and assigns money to players.
-        - `Assicurazione()`: Handles the insurance phase.
-        - `Raddoppio()`: Handles the doubling phase.
-        - `EffettuaSplit(Player)`: Handles the split action for a player.
-        - `Split()`: Checks and performs split actions.
-        - `DelSplit()`: Deletes split players.
-        - `StartWindow(win)`: Starts the game window.
-        - `RunGame()`: Runs the main game loop, handling all game actions and state management.
+- `Game`: Classe principale per la logica del gioco.
+    - Metodi: 
+        - `__init__(np, nai, nm, sm, sts, vid, tmp, naiv, nmani, print)`: Inizializza il gioco con i parametri specificati.
+        - `creaMazzo()`: Crea e mescola il mazzo.
+        - `PescaCarta()`: Pesca una carta dal mazzo.
+        - `PuntataIniziale()`: Gestisce la fase di scommessa iniziale.
+        - `Vincite()`: Verifica le vincite e assegna denaro ai giocatori.
+        - `Assicurazione()`: Gestisce la fase di assicurazione.
+        - `Raddoppio()`: Gestisce la fase di raddoppio.
+        - `EffettuaSplit(Player)`: Gestisce l'azione di split per un giocatore.
+        - `Split()`: Verifica e esegue le azioni di split.
+        - `DelSplit()`: Elimina i giocatori split.
+        - `StartWindow(win)`: Avvia la finestra del gioco.
+        - `RunGame()`: Esegue il ciclo principale del gioco, gestendo tutte le azioni e lo stato del gioco.
 
-### Main Execution
+### Esecuzione Principale
 
-- Initializes the game with the specified parameters.
-- Runs the main game loop, handling all game actions and state management.
-- Optionally saves game statistics and manages the graphical interface if enabled.
+- Inizializza il gioco con i parametri specificati.
+- Esegue il ciclo principale del gioco, gestendo tutte le azioni e lo stato del gioco.
+- Opzionalmente salva le statistiche del gioco e gestisce l'interfaccia grafica se abilitata.
