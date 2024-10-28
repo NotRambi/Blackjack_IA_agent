@@ -11,7 +11,7 @@ def run_game_with_queue(game, queue):   # funzione per eseguire il gioco con una
 if __name__ == "__main__":
     
     #default values
-    numIA = 1
+    numIA = 0
     numAgentiNaive = 0
 
     numMazzi = 4
@@ -45,6 +45,7 @@ if __name__ == "__main__":
         print("\nValori di simulazione:\nNumero simulazioni:", numSimulazioni,"\nNumero mani per simulazione:", numMani)
         print("\nValori di gioco:\nNumero agentiIA:", numIA, "\nNumero agenti Naive:", numAgentiNaive, "\nNumero mazzi:", numMazzi, "\nSoldi iniziali:", startingMoney)
     else:
+        numIA = 1
         print("\nValori di default senza argomenti:\nAgenti: 1\nMazzi: 4\nMani: 100\nSoldi: 1000\nSimulazioni: 1") 
 
     print("\nInizio simulazioni\n")
@@ -76,15 +77,27 @@ if __name__ == "__main__":
     # calcolo statistiche
     numRes = numAgentiNaive + numIA
     media = [0] * numRes
+    moltiplicatore = [1] * numRes
     for r in Risultati:
+        if r == None:
+            continue
         for i in range(numRes):
+            if r[i] == None:
+                continue
             media[i] += int(r[i])
     media = [m / numSimulazioni for m in media]
+    for i in range(numRes):
+        moltiplicatore[i] = media[i] / startingMoney
+        moltiplicatore[i] = round(moltiplicatore[i], 3)
 
     print("Risultati delle simulazioni:")
     for i in range(numIA):
-        print("Agente IA", i+1, ":", media[i])
+        print("Agente IA", i+1, ":")
+        print("Media:", media[i])
+        print("Rateo:", str(moltiplicatore[i])+"x")
     for i in range(numAgentiNaive):
-        print("Agente Naive", i+1, ":", media[i + numIA])
+        print("Agente Naive", i+1, ":")
+        print("Media:", media[i + numIA])
+        print("Rateo:", str(moltiplicatore[i + numIA])+"x")
 
     print("\n")
