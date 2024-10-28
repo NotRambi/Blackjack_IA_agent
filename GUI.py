@@ -112,11 +112,11 @@ class GUI(object):
         self.f.write("0")  # questo valore indica che il gioco non deve fermarsi  
         self.f.close()    
         if self.t is None:
-            NewGame = Game.Game(self.numPlayers, self.numIA, self.numMazzi, self.startingMoney, self.stats, self.Video, self.tempfolder.name)
+            NewGame = Game.Game(self.numPlayers, self.numIA, self.numMazzi, self.startingMoney, self.stats, self.Video, self.tempfolder.name, 0, 0, True)
             self.t = Thread(target=NewGame.RunGame)
             self.t.start()
         elif not self.t.is_alive():
-            NewGame = Game.Game(self.numPlayers, self.numIA, self.numMazzi, self.startingMoney, self.stats, self.Video, self.tempfolder.name)
+            NewGame = Game.Game(self.numPlayers, self.numIA, self.numMazzi, self.startingMoney, self.stats, self.Video, self.tempfolder.name, 0, 0, True)
             self.t = Thread(target=NewGame.RunGame)
             self.t.start()      
 

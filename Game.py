@@ -1,10 +1,8 @@
 import Blackjack
-import Tavolo
 import random
-from threading import Thread
 
 class Game:
-    def __init__(self, np, nai, nm, sm, sts, vid, tmp):
+    def __init__(self, np, nai, nm, sm, sts, vid, tmp, naiv, nmani, print):
 
         # Variabili globali
         self.numDiMazzi = nm # solitamente da 2 a 6 mazzi
@@ -24,9 +22,14 @@ class Game:
         self.soldiIniziali = sm # soldi iniziali per giocatori e agenti
         self.saveStats = sts # salvataggio statistiche
         self.video = vid # interfaccia grafica
+        self.numAgentiNaive = naiv # agenti naive
+        self.numMani = nmani # numero di mani da giocare (se 0 = illimitato)
 
         # cartella temporanea condivisa
         self.tmp = tmp 
+
+        # variabile di debug
+        self.print = print
 
     ## METODI DI GIOCO ##
 
@@ -59,16 +62,19 @@ class Game:
                 try:
                     self.Giocatori[i].bet = int(input(self.Giocatori[i].nome+', inserisci la tua puntata: ')) 
                     if self.Giocatori[i].bet < 0:
-                        print('Inserisci una puntata non minore di 0')
+                        if self.print:
+                            print('Inserisci una puntata non minore di 0')
                         continue
                     if self.Giocatori[i].bet > self.Giocatori[i].soldi:
-                        print('Non hai abbastanza soldi per questa puntata')
+                        if self.print:
+                            print('Non hai abbastanza soldi per questa puntata')
                         continue
                     else:
                         self.Giocatori[i].soldi -= self.Giocatori[i].bet
                         break
                 except:
-                    print('Inserisci un numero intero')
+                    if self.print:
+                        print('Inserisci un numero intero')
                     continue
         for j in range(0, len(self.Agenti)):
             self.Agenti[j].bet = 0
@@ -76,12 +82,14 @@ class Game:
                 try:
                     self.Agenti[j].bet = self.Agenti[j].chooseBet()
                     if self.Agenti[j].bet > self.Agenti[j].soldi:
-                        print(self.Agenti[j].nome+' ha scommesso tutti i soldi')
+                        if self.print:
+                            print(self.Agenti[j].nome+' ha scommesso tutti i soldi')
                         self.Agenti[j].bet = self.Agenti[j].soldi
                         break
                     else:
                         self.Agenti[j].soldi -= self.Agenti[j].bet
-                        print(self.Agenti[j].nome+' ha scommesso '+str(self.Agenti[j].bet))
+                        if self.print:
+                            print(self.Agenti[j].nome+' ha scommesso '+str(self.Agenti[j].bet))
                         break
                 except:
                     continue
@@ -95,20 +103,24 @@ class Game:
                 if i < self.numGiocatori: # se è un giocatore originale
                     if self.Giocatori[i].blackjack:
                         self.Giocatori[i].soldi += self.Giocatori[i].bet # se sia dealer che giocatore hanno un blackjack, il giocatore va in pari
-                        print(self.Giocatori[i].nome+', pareggio BJ')
+                        if self.print:
+                            print(self.Giocatori[i].nome+', pareggio BJ')
                         continue
                     elif self.Giocatori[i].assicurazione:
                         self.Giocatori[i].soldi += 1.5*self.Giocatori[i].bet # se il dealer ha un blackjack e il giocatore ha assicurato, il giocatore vince l'assicurazione
-                        print(self.Giocatori[i].nome+', pareggio Assicurazione')
+                        if self.print:
+                            print(self.Giocatori[i].nome+', pareggio Assicurazione')
                         continue
-                    print(self.Giocatori[i].nome+', sconfitta') # se il dealer ha un blackjack e il giocatore no, il giocatore perde (i soldi erano gia stati sottratti)
+                    if self.print:
+                        print(self.Giocatori[i].nome+', sconfitta') # se il dealer ha un blackjack e il giocatore no, il giocatore perde (i soldi erano gia stati sottratti)
                 else: # se è un giocatore clone generato da uno split
                     if self.Giocatori[i].blackjack: 
                         for j in range(0,self.numGiocatori):
                             if self.Giocatori[j].split:
                                 if self.Giocatori[i].nome == self.Giocatori[j].nome+'_split':
                                     self.Giocatori[j].soldi += self.Giocatori[i].bet
-                                    print(self.Giocatori[i].nome+', pareggio BJ')
+                                    if self.print:
+                                        print(self.Giocatori[i].nome+', pareggio BJ')
                                     break
                         continue
                     elif self.Giocatori[i].assicurazione:
@@ -116,23 +128,28 @@ class Game:
                             if self.Giocatori[j].split:
                                 if self.Giocatori[i].nome == self.Giocatori[j].nome+'_split':
                                     self.Giocatori[j].soldi += 1.5*self.Giocatori[i].bet
-                                    print(self.Giocatori[i].nome+', pareggio Assicurazione')
+                                    if self.print:
+                                        print(self.Giocatori[i].nome+', pareggio Assicurazione')
                                     break
                         continue
-                    print(self.Giocatori[i].nome+', sconfitta')
+                    if self.print:
+                        print(self.Giocatori[i].nome+', sconfitta')
             # idem per gli agenti
             for j in range(0,len(self.Agenti)):
                 if self.Agenti[j].bet == 0:
                     continue
                 if self.Agenti[j].blackjack:
                     self.Agenti[j].soldi += self.Agenti[j].bet
-                    print(self.Agenti[j].nome+', pareggio BJ')
+                    if self.print:
+                        print(self.Agenti[j].nome+', pareggio BJ')
                     continue
                 elif self.Agenti[j].assicurazione:
                     self.Agenti[j].soldi += 1.5*self.Agenti[j].bet
-                    print(self.Agenti[j].nome+', pareggio Assicurazione')
+                    if self.print:
+                        print(self.Agenti[j].nome+', pareggio Assicurazione')
                     continue
-                print(self.Agenti[j].nome+', sconfitta')
+                if self.print:
+                    print(self.Agenti[j].nome+', sconfitta')
         else:
             for i in range(0, len(self.Giocatori)):
                 if self.Giocatori[i].bet == 0:
@@ -141,29 +158,35 @@ class Game:
                     if i < self.numGiocatori: # caso giocatore originale
                         if self.Giocatori[i].blackjack:
                             self.Giocatori[i].soldi += 2.5*self.Giocatori[i].bet # se il giocatore ha un blackjack, vince 2.5 volte la puntata
-                            print(self.Giocatori[i].nome+', vittoria BJ')
+                            if self.print:
+                                print(self.Giocatori[i].nome+', vittoria BJ')
                             continue
                         elif self.Dealer.sballa:
                             self.Giocatori[i].soldi += 2*self.Giocatori[i].bet 
-                            print(self.Giocatori[i].nome+', vittoria Dealer sballato')
+                            if self.print:
+                                print(self.Giocatori[i].nome+', vittoria Dealer sballato')
                             continue
                         else:
                             if self.Giocatori[i].valoreMano > self.Dealer.valoreMano:
                                 self.Giocatori[i].soldi += 2*self.Giocatori[i].bet
-                                print(self.Giocatori[i].nome+', vittoria')
+                                if self.print:
+                                    print(self.Giocatori[i].nome+', vittoria')
                                 continue
                             elif self.Giocatori[i].valoreMano == self.Dealer.valoreMano:
                                 self.Giocatori[i].soldi += self.Giocatori[i].bet
-                                print(self.Giocatori[i].nome+', pareggio')
+                                if self.print:
+                                    print(self.Giocatori[i].nome+', pareggio')
                                 continue
-                        print(self.Giocatori[i].nome+', sconfitta')
+                        if self.print:
+                            print(self.Giocatori[i].nome+', sconfitta')
                     else: # caso giocatore clone generato da uno split
                         if self.Giocatori[i].blackjack:
                             for j in range(0,self.numGiocatori):
                                 if self.Giocatori[j].split:
                                     if self.Giocatori[i].nome == self.Giocatori[j].nome+'_split':
                                         self.Giocatori[j].soldi += 2.5*self.Giocatori[i].bet
-                                        print(self.Giocatori[i].nome+', vittoria BJ')
+                                        if self.print:
+                                            print(self.Giocatori[i].nome+', vittoria BJ')
                                         break
                             continue
                         elif self.Dealer.sballa:
@@ -171,7 +194,8 @@ class Game:
                                 if self.Giocatori[j].split:
                                     if self.Giocatori[i].nome == self.Giocatori[j].nome+'_split':
                                         self.Giocatori[j].soldi += 2*self.Giocatori[i].bet
-                                        print(self.Giocatori[i].nome+', vittoria Dealer sballato')
+                                        if self.print:
+                                            print(self.Giocatori[i].nome+', vittoria Dealer sballato')
                                         break
                             continue
                         else:
@@ -181,18 +205,22 @@ class Game:
                                     if self.Giocatori[i].nome == self.Giocatori[j].nome+'_split':
                                         if self.Giocatori[i].valoreMano > self.Dealer.valoreMano:
                                             self.Giocatori[j].soldi += 2*self.Giocatori[i].bet
-                                            print(self.Giocatori[i].nome+', vittoria')
+                                            if self.print:
+                                                print(self.Giocatori[i].nome+', vittoria')
                                             flag = True
                                             break
                                         elif self.Giocatori[i].valoreMano == self.Dealer.valoreMano:
                                             self.Giocatori[j].soldi += self.Giocatori[i].bet
-                                            print(self.Giocatori[i].nome+', pareggio')
+                                            if self.print:
+                                                print(self.Giocatori[i].nome+', pareggio')
                                             flag = True
                                             break
                             if flag == False:
-                                print(self.Giocatori[i].nome+', sconfitta')
+                                if self.print:
+                                    print(self.Giocatori[i].nome+', sconfitta')
                 else:
-                    print(self.Giocatori[i].nome+', sballato')
+                    if self.print:
+                        print(self.Giocatori[i].nome+', sballato')
 
             # idem per gli agenti
             for j in range(0,len(self.Agenti)):
@@ -201,24 +229,30 @@ class Game:
                 if not self.Agenti[j].sballa:
                     if self.Agenti[j].blackjack:
                         self.Agenti[j].soldi += 2.5*self.Agenti[j].bet
-                        print(self.Agenti[j].nome+', vittoria BJ')
+                        if self.print:
+                            print(self.Agenti[j].nome+', vittoria BJ')
                         continue
                     elif self.Dealer.sballa:
                         self.Agenti[j].soldi += 2*self.Agenti[j].bet
-                        print(self.Agenti[j].nome+', vittoria Dealer sballato')
+                        if self.print:
+                            print(self.Agenti[j].nome+', vittoria Dealer sballato')
                         continue
                     else:
                         if self.Agenti[j].valoreMano > self.Dealer.valoreMano:
                             self.Agenti[j].soldi += 2*self.Agenti[j].bet
-                            print(self.Agenti[j].nome+', vittoria')
+                            if self.print:
+                                print(self.Agenti[j].nome+', vittoria')
                             continue
                         elif self.Agenti[j].valoreMano == self.Dealer.valoreMano:
                             self.Agenti[j].soldi += self.Agenti[j].bet
-                            print(self.Agenti[j].nome+', pareggio')
+                            if self.print:
+                                print(self.Agenti[j].nome+', pareggio')
                             continue
-                    print(self.Agenti[j].nome+', sconfitta')
+                    if self.print:
+                        print(self.Agenti[j].nome+', sconfitta')
                 else:
-                    print(self.Agenti[j].nome+', sballato')
+                    if self.print:
+                        print(self.Agenti[j].nome+', sballato')
 
     # Controllo Assicurazione
     def Assicurazione(self):
@@ -235,10 +269,12 @@ class Game:
                                 elif assicura == 'n':
                                     break
                                 else:
-                                    print('Inserisci y o n')
+                                    if self.print:
+                                        print('Inserisci y o n')
                                     continue
                             except:
-                                print('Inserisci y o n')
+                                if self.print:
+                                    print('Inserisci y o n')
                                 continue
 
     # Controllo Raddoppio
@@ -255,10 +291,12 @@ class Game:
                             elif raddoppia == 'n':
                                 break
                             else:
-                                print('Inserisci y o n')
+                                if self.print:
+                                    print('Inserisci y o n')
                                 continue
                         except:
-                            print('Inserisci y o n')
+                            if self.print:
+                                print('Inserisci y o n')
                             continue
 
     # Controllo Split
@@ -291,11 +329,14 @@ class Game:
                                 elif split == 'n':
                                     break
                                 else:
-                                    print('Inserisci y o n')
+                                    if self.print:
+                                        print('Inserisci y o n')
                                     continue
                             except Exception as e:
-                                print(e)
-                                print('Inserisci y o n')
+                                if self.print:
+                                    print(e)
+                                if self.print:
+                                    print('Inserisci y o n')
                                 continue
 
     def DelSplit(self):
@@ -316,13 +357,24 @@ class Game:
 
         for i in range(0, self.numAgenti):
             self.Agenti.append(Blackjack.AgenteIA('Agente_'+str(i+1), self.soldiIniziali, self.mazzo, self.numDiMazzi))
+        
+        if self.numAgentiNaive > 0:
+            self.numAgenti += self.numAgentiNaive
+            for i in range(0, self.numAgentiNaive):
+                self.Agenti.append(Blackjack.AgenteNaive('AgenteNaive_'+str(i+1), self.soldiIniziali))
 
         if self.video:
             # inizializzazione Finestra di gioco
-            Win = Tavolo.Screen()
-            Thread(target=self.StartWindow, args=(Win,)).start()
-            tavolo = Win.getTable()
-            tavolo.showCards(7, '1c')
+
+            #import Tavolo
+            #from threading import Thread
+
+            #Win = Tavolo.Screen()
+            #Thread(target=self.StartWindow, args=(Win,)).start()
+            #tavolo = Win.getTable()
+            #tavolo.showCards(7, '1c')s
+            pass
+            # da finire
 
         if self.saveStats:
             # inizializzazione statistiche
@@ -345,7 +397,8 @@ class Game:
 
         ## Loop di gioco ##
         while True:
-            print("inizio partita")
+            if self.print:
+                print("inizio partita")
             self.PuntataIniziale() # fase di puntata iniziale
             flag_AtLeastOnePlayer = False
             for i in range(0, self.numGiocatori):
@@ -357,7 +410,8 @@ class Game:
                     flag_AtLeastOnePlayer = True
                     self.Agenti[j].addCard(self.PescaCarta())
             if flag_AtLeastOnePlayer == False:
-                print("nessun giocatore ha puntato, Arrivederci")
+                if self.print:
+                    print("nessun giocatore ha puntato, Arrivederci")
                 if self.saveStats:
                     self.statsFile.close()
                 return
@@ -370,22 +424,28 @@ class Game:
                     self.Agenti[j].addCardToDealer(self.Dealer.mano[0])
                     self.Agenti[j].addCard(self.PescaCarta())
             self.Dealer.addCard(self.PescaCarta())
-            print('Dealer: '+self.Dealer.mano[0]+', *')
+            if self.print:
+                print('Dealer: '+self.Dealer.mano[0]+', *')
             for i in range(0, self.numGiocatori):
-                print(self.Giocatori[i].toStr()+', '+self.Giocatori[i].toStrMano())
+                if self.print:
+                    print(self.Giocatori[i].toStr()+', '+self.Giocatori[i].toStrMano())
             for j in range(0, self.numAgenti):
-                print(self.Agenti[j].toStr()+', '+self.Agenti[j].toStrMano())
+                if self.print:
+                    print(self.Agenti[j].toStr()+', '+self.Agenti[j].toStrMano())
             
             if self.Dealer.blackjack: # blackjack del dealer
                 self.Assicurazione()
-                print('Dealer ha un blackjack') # in questo caso il dealer deve scoprire le carte e non permette ulteriori mosse ai giocatori
+                if self.print:
+                    print('Dealer ha un blackjack') # in questo caso il dealer deve scoprire le carte e non permette ulteriori mosse ai giocatori
             else: # nessun blackjack del dealer
                 self.Assicurazione()
                 self.Split()
                 self.Raddoppio()
-                print("fine prima fase") # prima fase = possibili mosse precedenti alla distribuzione delle carte non iniziali
+                if self.print:
+                    print("fine prima fase") # prima fase = possibili mosse precedenti alla distribuzione delle carte non iniziali
                 for i in range(0, len(self.Giocatori)):
-                    print(self.Giocatori[i].toStr()+', '+self.Giocatori[i].toStrMano())
+                    if self.print:
+                        print(self.Giocatori[i].toStr()+', '+self.Giocatori[i].toStrMano())
 
                 for i in range(0, self.numGiocatori): # fase di gioco in cui i giocatori chiedono carte
                     if self.Giocatori[i].bet > 0:
@@ -396,19 +456,23 @@ class Game:
                                 scelta = input(self.Giocatori[i].nome+', vuoi chiedere una carta? (y/n): ')
                                 if scelta == 'y':
                                     self.Giocatori[i].addCard(self.PescaCarta())
-                                    print(self.Giocatori[i].toStrMano())
+                                    if self.print:
+                                        print(self.Giocatori[i].toStrMano())
                                     if self.Giocatori[i].sballa:
-                                        print(self.Giocatori[i].nome+', hai sballato') # idem se sballa (>21)
+                                        if self.print:
+                                            print(self.Giocatori[i].nome+', hai sballato') # idem se sballa (>21)
                                         break 
                                     elif self.Giocatori[i].doppio:
                                         break
                                 elif scelta == 'n':
                                     break
                                 else:
-                                    print('Inserisci y o n')
+                                    if self.print:
+                                        print('Inserisci y o n')
                                     continue
                             except:
-                                print('Inserisci y o n')
+                                if self.print:
+                                    print('Inserisci y o n')
                                 continue
                     if self.Giocatori[i].split: # finiti i giocatori originali, si passa ai giocatori clonati (ossia gli split)
                         for j in range(self.numGiocatori,len(self.Giocatori)):
@@ -420,19 +484,23 @@ class Game:
                                         scelta = input(self.Giocatori[j].nome+', vuoi chiedere una carta? (y/n): ')
                                         if scelta == 'y':
                                             self.Giocatori[j].addCard(self.PescaCarta())
-                                            print(self.Giocatori[j].toStrMano())
+                                            if self.print:
+                                                print(self.Giocatori[j].toStrMano())
                                             if self.Giocatori[j].sballa:
-                                                print(self.Giocatori[j].nome+', hai sballato')
+                                                if self.print:
+                                                    print(self.Giocatori[j].nome+', hai sballato')
                                                 break
                                             elif self.Giocatori[i].doppio:
                                                 break
                                         elif scelta == 'n':
                                             break
                                         else:
-                                            print('Inserisci y o n')
+                                            if self.print:
+                                                print('Inserisci y o n')
                                             continue
                                     except:
-                                        print('Inserisci y o n')
+                                        if self.print:
+                                            print('Inserisci y o n')
                                         continue
 
                 for j in range(0, self.numAgenti):
@@ -442,24 +510,30 @@ class Game:
                             if self.Agenti[j].valoreMano == 21:
                                 break
                             scelta = self.Agenti[j].ChooseCarta(self.Agenti[j].mano,self.Dealer.mano)
-                            print(self.Agenti[j].nome+', carta' if scelta == 1 else self.Agenti[j].nome+', passa')
+                            if self.print:
+                                print(self.Agenti[j].nome+', carta' if scelta == 1 else self.Agenti[j].nome+', passa')
                             if scelta == 1:
                                 self.Agenti[j].addCard(self.PescaCarta())
-                                print(self.Agenti[j].toStrMano())
+                                if self.print:
+                                    print(self.Agenti[j].toStrMano())
                                 if self.Agenti[j].sballa:
-                                    print(self.Agenti[j].nome+', ha sballato')
+                                    if self.print:
+                                        print(self.Agenti[j].nome+', ha sballato')
                                     break
                                 elif self.Agenti[j].doppio:
                                     break
                             else:
                                 break
 
-                print('Dealer: '+self.Dealer.toStrMano())
+                if self.print:
+                    print('Dealer: '+self.Dealer.toStrMano())
                 while self.Dealer.valoreMano < 17:
                     self.Dealer.addCard(self.PescaCarta())
-                    print('Dealer: '+self.Dealer.toStrMano())
+                    if self.print:
+                        print('Dealer: '+self.Dealer.toStrMano())
                     if self.Dealer.sballa:
-                        print('Dealer sballato')
+                        if self.print:
+                            print('Dealer sballato')
                         break
 
             self.Vincite() # finiti i turni si controllano le vincite
@@ -473,9 +547,11 @@ class Game:
             self.Dealer.resetMano() # resetta la mano del dealer
 
             for i in range(0, len(self.Giocatori)):
-                print(self.Giocatori[i].toStr()) 
+                if self.print:
+                    print(self.Giocatori[i].toStr()) 
             for j in range(0, len(self.Agenti)):
-                print(self.Agenti[j].toStr())
+                if self.print:
+                    print(self.Agenti[j].toStr())
 
             # aggiunta statistiche
             self.contMani += 1
@@ -489,6 +565,17 @@ class Game:
             
             while True: # loop (provvisorio) per continuare a giocare o uscire dalla partita
                 continua = True
+                if self.numMani > 0:
+                    if self.contMani >= self.numMani:
+                        if self.print:
+                            print('Arrivederci')
+                        if self.saveStats:
+                            self.statsFile.close()
+                        # calcolo statistiche finali
+                        risultati = []
+                        for j in range(0, len(self.Agenti)):
+                            risultati.append(self.Agenti[j].soldi)
+                        return risultati
                 try:
                     f = open(self.tmp + "/temp.txt", "r")
                     parametroTemp = f.read()
@@ -496,24 +583,18 @@ class Game:
                     if parametroTemp == "1":
                         continua = False
                 except:
-                    print('Arrivederci')
-                    if self.saveStats:
-                        self.statsFile.close()
-                    return
+                    break
                 if continua:
                     break
-                print('Arrivederci')
+                if self.print:
+                    print('Arrivederci')
                 if self.saveStats:
                     self.statsFile.close()
                 return
 
             if len(self.Carte) < self.Taglia: # controllo raggiungimento della taglia
-                print("rimescola il mazzo")
+                if self.print:
+                    print("rimescola il mazzo")
                 self.creaMazzo() # se raggiunta, rimescolamento del mazzo
                 for j in range(0, self.numAgenti):
                     self.Agenti[j].resetMazzo()
-
-
-
-
-

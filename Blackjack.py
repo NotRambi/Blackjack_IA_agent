@@ -61,6 +61,7 @@ class Giocatore:
         self.split = False
         self.doppio = False
 
+
 # definizione di agente IA, sotto-classe di giocatore
 class AgenteIA(Giocatore):
     def __init__(self, nome, soldi, mazzo_intero, num_mazzi):
@@ -121,52 +122,52 @@ class AgenteIA(Giocatore):
     def InferenzaProbabilità(self,i,dictMazzo,lenMazzo,dictProbHand,flagAsso): # funzione ricorsiva per calcolare la distribuzione di probabilità del dealer
         if i >= 17: # caso base
             return dictProbHand
-        prob = dictProbHand[i]
-        for e in dictMazzo:
-            if dictMazzo[e] == 0:
+        prob = dictProbHand[i]  # questa ricorsione ha nel calcolo finale peso "prop"
+        for e in dictMazzo:     
+            if dictMazzo[e] == 0:   
                 continue
-            flag = False
-            flag2 = flagAsso
-            if len(e) == 3:
-                if i+10 <= 21:
-                    dictProbHand[i+10] = dictProbHand[i+10] + prob*dictMazzo[e]/lenMazzo
+            flag = False    # flag asso per il ciclo
+            flag2 = flagAsso    # flag asso per la chiamata ricorsiva   
+            if len(e) == 3:     # se la carta è un 10 o una figura
+                if i+10 <= 21:  # caso in cui non si sballa
+                    dictProbHand[i+10] = dictProbHand[i+10] + prob*dictMazzo[e]/lenMazzo    # la probabilità di avere i+10 punti aumenta (dove i era il punteggio della chiamata ricorsiva precedente)
                     i2 = i+10
-                elif flagAsso:
+                elif flagAsso: # caso in cui c'è un asso che può essere considerato 1
                     flag2 = False
                     dictProbHand[i-10+10] = dictProbHand[i-10+10] + prob*dictMazzo[e]/lenMazzo
                     i2 = i-10+10
-                else:
+                else:   # caso in cui si sballa
                     dictProbHand[22] = dictProbHand[22] + prob*dictMazzo[e]/lenMazzo
                     i2 = 22
-            elif e[0] == '1':
-                if i+11 <= 21:
+            elif e[0] == '1':   # se la carta è un asso
+                if i+11 <= 21:  # caso in cui l'asso verrà considerato 11
                     dictProbHand[i+11] = dictProbHand[i+11] + prob*dictMazzo[e]/lenMazzo
                     i2 = i+11
                     flag = True
-                elif i+1 <= 21:
+                elif i+1 <= 21: # caso in cui l'asso verrà considerato 1
                     dictProbHand[i+1] = dictProbHand[i+1] + prob*dictMazzo[e]/lenMazzo
                     i2 = i+1
                 else:
                     dictProbHand[22] = dictProbHand[22] + prob*dictMazzo[e]/lenMazzo
                     i2 = 22
-            else:
-                if i+int(e[0]) <= 21:
+            else:   # se la carta è da 2 a 9
+                if i+int(e[0]) <= 21:   # caso in cui non si sballa
                     dictProbHand[i+int(e[0])] = dictProbHand[i+int(e[0])] + prob*dictMazzo[e]/lenMazzo
                     i2 = i+int(e[0])
-                elif flagAsso:
+                elif flagAsso:  # caso in cui c'è un asso che può essere considerato 1
                     flag2 = False
                     dictProbHand[i-10+int(e[0])] = dictProbHand[i-10+int(e[0])] + prob*dictMazzo[e]/lenMazzo
                     i2 = i-10+int(e[0])
-                else:
+                else:   # caso in cui si sballa
                     dictProbHand[22] = dictProbHand[22] + prob*dictMazzo[e]/lenMazzo
                     i2 = 22
-            dictProbHand[i] = dictProbHand[i] - prob*dictMazzo[e]/lenMazzo
+            dictProbHand[i] = dictProbHand[i] - prob*dictMazzo[e]/lenMazzo  # la probabilità di avere i punti diminuisce di quanto sono aumentate le probabilità di avere punteggi maggiori
             newMazzo = dictMazzo.copy()
             newMazzo[e] -= 1
             if flag:
-                dictProbHand = self.InferenzaProbabilità(i2,newMazzo,lenMazzo-1,dictProbHand,True)
+                dictProbHand = self.InferenzaProbabilità(i2,newMazzo,lenMazzo-1,dictProbHand,True)  # chiamata ricorsiva
             else:
-                dictProbHand = self.InferenzaProbabilità(i2,newMazzo,lenMazzo-1,dictProbHand,flag2)
+                dictProbHand = self.InferenzaProbabilità(i2,newMazzo,lenMazzo-1,dictProbHand,flag2) 
         return dictProbHand
     
     def ChooseCarta(self, MyHand,DealerHand): # funzione chiamata per decidere se chiedere carta o passare
@@ -200,7 +201,6 @@ class AgenteIA(Giocatore):
             dictValDealerHand = self.InferenzaProbabilità(self.HandValueCalc(DealerHand),dictMazzo,lenMazzo,dictValDealerHand,True)
         else:
             dictValDealerHand = self.InferenzaProbabilità(self.HandValueCalc(DealerHand),dictMazzo,lenMazzo,dictValDealerHand,False)
-
 
         # confronto tra dealer e mano personale se passo
         probWinPasso = 0
@@ -277,6 +277,67 @@ class AgenteIA(Giocatore):
         else:
             return int((TrueCount+1)*self.BetUnits)
     
+# definizione di agente naive, sotto-classe di giocatore
+class AgenteNaive(Giocatore):
+    def __init__(self, nome, soldi):
+        super().__init__(nome, soldi)
+        self.BetUnits = 0.01 * self.soldi
+    
+    def HandValueCalc(self, hand): # funzione per calcolare il valore di una mano
+        Hand = hand.copy()
+        Val = 0
+        for card in Hand:
+            if len(card) == 3:
+                Val += 10
+            elif card[0] == '1':
+                Val += 11
+            else:
+                Val += int(card[0])
+        
+        while Val > 21:
+            flag = False
+            for card in Hand:
+                if len(card) == 2 and card[0] == '1':
+                    Val -= 10
+                    Hand.remove(card)
+                    flag = True
+            if not flag:
+                break
+        return Val
+    
+    def ChooseCarta(self, MyHand,DealerHand): # funzione chiamata per decidere se chiedere carta o passare arbitrariamente
+
+        ValMyHand = self.HandValueCalc(MyHand)
+        ValDealerHand = self.HandValueCalc(DealerHand)
+
+        if ValMyHand < 12: # caso in cui si ha un 11 o meno (matematicamente impossibile sballare)
+            return 1 # carta
+        elif ValMyHand == 12:   # caso in cui si ha un 12
+            if ValDealerHand < 4 or ValDealerHand > 6:
+                return 1
+            else:
+                return 0
+        elif ValMyHand < 17:    # caso in cui si ha da 13 a 16
+            if ValDealerHand < 7:
+                return 1
+            else:
+                return 0  
+        else:   # caso in cui si ha un 17 o più
+            return 0 # passo
+
+    def chooseBet(self):    # funzione per decidere la puntata
+        return self.BetUnits  # puntata fissa del 1% dei soldi iniziali
+    
+    def addCardToDealer(self, carta):   # funzione per aggiornare la mano del dealer (non considerata per il calcolo nell'agente naive)
+        pass
+
+    def updateMazzo(self, uscite):  # funzione per aggiornare il mazzo (non considerata per il calcolo nell'agente naive)
+        pass    
+
+    def resetMazzo(self):   # funzione per resettare il mazzo (non considerata per il calcolo nell'agente naive)
+        pass
+    
+
 # definizione di dealer
 class dealer:
     def __init__(self):
@@ -316,3 +377,4 @@ class dealer:
         self.valoreMano = 0
         self.blackjack = False
         self.sballa = False
+
