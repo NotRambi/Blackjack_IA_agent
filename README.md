@@ -59,7 +59,7 @@ Una volta avviato il container seguire i seguenti passaggi per provare il codice
     - Mazzi = numero di mazzi usati dal Dealer
     - Soldi = numero di soldi iniziali per ogni giocatore
     - Sim = numero di simulazioni da effettuare
-    - Mani = numero di mani da giocare per ogni simulazioneni modificare i seguenti parametri:
+    - Mani = numero di mani da giocare per ogni simulazione
    
 
 3. Avviare direttamente una partita:
