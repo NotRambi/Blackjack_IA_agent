@@ -8,6 +8,22 @@ Durata=16243.498
 Risultati:
 1.778x
 
+Mani=100
+Sim=100
+Risultati:
+1.093x
+
+Mani=500
+Sim=100
+Risultati:
+1.149x
+
+Mani=2000
+Sim=100
+Risultati:
+2.264x
+
+
 2)
 IA=0
 Naive=1
@@ -17,6 +33,22 @@ Simulazioni=100
 Durata=1.738
 Risultati:
 0.281x
+
+Mani=100
+Sim=100
+Risultati:
+0.916x
+
+Mani=500
+Sim=100
+Risultati:
+0.686x
+
+Mani=2000
+Sim=100
+Risultati:
+0.026x
+
 
 3)
 IA=1
@@ -31,6 +63,31 @@ IA:
 Naive:
 0.357x
 
+Mani=100
+Sim=100
+Risultati:
+IA:
+1.052x
+Naive:
+0.947x
+
+Mani=500
+Sim=100
+Risultati:
+IA:
+1.151x
+Naive:
+0.567x
+
+Mani=2000
+Sim=100
+Risultati:
+IA:
+2.151x
+Naive:
+0.017x
+
+
 4)
 IA=4
 Naive=0
@@ -39,7 +96,23 @@ Mani=1000
 Simulazioni=100
 Durata=59461.568
 Risultati:
-1.627x 1.701x 1.617x 1.647x
+1.627x 1.701x 1.617x 1.647x media=1.648x
+
+Mani=100
+Sim=100
+Risultati:
+1.036x 1.028x 1.069x 1.092x media=1.056x
+
+Mani=500
+Sim=100
+Risultati:
+1.5x 1.423x 1.527x 1.423x media=1.458x
+
+Mani=2000
+Sim=100
+Risultati:
+2.375x 2.023x 2.305x 2.194x media=2.224x
+
 
 5)
 IA=0
@@ -49,9 +122,25 @@ Mani=1000
 Simulazioni=100
 Durata=4.210
 Risultati:
-0.309x 0.33x 0.346x 0.329x
+0.309x 0.33x 0.346x 0.329x media=0.329x
 
-5)
+Mani=100
+Sim=100
+Risultati:
+0.96x 0.962x 0.949x 0.954x media=0.956x
+
+Mani=500
+Sim=100
+Risultati:
+0.7x 0.707x 0.743x 0.792x media=0.736x
+
+Mani=2000
+Sim=100
+Risultati:
+0.107x 0.03x 0.112x 0.087x media=0.084x
+
+
+6)
 IA=3
 Naive=3
 Mazzi=4
@@ -60,7 +149,31 @@ Simulazioni=100
 Durata=44732.805
 Risultati:
 IA:
-1.605x 1.632x 1.61x
+1.605x 1.632x 1.61x media=1.616x
 Naive:
-0.295x 0.316x 0.284x
+0.295x 0.316x 0.284x media=0.298x
+
+Mani=100
+Sim=100
+Risultati:
+IA:
+1.119x 1.101x 1.124x media=1.115x
+Naive:
+0.952x 0.939x 0.983x media=0.958x
+
+Mani=500
+Sim=100
+Risultati:
+IA:
+1.557x 1.484x 1.429x media=1.490x
+Naive:
+0.725x 0.605x 0.677x media=0.669x
+
+Mani=2000
+Sim=100
+Risultati:
+IA:
+2.522x 2.301x 2.452x media=2.377x
+Naive:
+0.045x 0.038x 0.046x media=0.043x
 
