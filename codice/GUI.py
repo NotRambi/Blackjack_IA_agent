@@ -151,8 +151,10 @@ class GUI(object):
                 # Crea il grafico
                 self.plot = plt
                 self.plot.figure(figsize=(10, 6))
-                for i in range(len(money)):
+                for i in range(self.numPlayers):
                     self.plot.plot(hands, money[i], label=f'Player {i+1}')
+                for i in range(self.numPlayers, self.numPlayers + self.numIA):
+                    self.plot.plot(hands, money[i], label=f'Agent {i-self.numPlayers+1}')
 
                 self.plot.xlabel('Mano')
                 self.plot.ylabel('Soldi')
