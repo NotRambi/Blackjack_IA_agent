@@ -40,9 +40,9 @@ Dopo aver creato l'immagine Docker, è possibile avviare il container utilizzand
 
 Una volta avviato il container seguire i seguenti passaggi per provare il codice:
 
-1. Entrare nella repo:
+1. Entrare nella directory:
 
-        cd Blackjack_IA_agent/
+        cd codice
     
 2. Avviare delle simulazioni:
 
